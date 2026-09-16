@@ -1,0 +1,204 @@
+/* =====================================================================
+   DESKTOP / PC LAYOUT UPGRADE — myselectionprep
+   =====================================================================
+   Ye file sirf >=900px (PC/laptop) screens par kaam karti hai.
+   Mobile pe koi farak nahi padega — jaisa abhi dikh raha hai waisa hi
+   rahega, kyunki har rule @media (min-width:900px) ke andar hai.
+
+   ISE KAISE LAGAYEIN:
+   Har HTML file ke <head> ke andar, </head> se THODA PEHLE, ye ek line
+   daal do (already daale gaye <link>/<style> tags ke neeche):
+
+     <link rel="stylesheet" href="css/desktop.css">
+
+   Ye 4 files mein daalni hai: index.html, product_page.html,
+   book_page.html, chat-3.html
+   ===================================================================== */
+
+
+/* =====================================================================
+   1) INDEX.HTML — Batches / Books / Orders / Support catalogue
+   ===================================================================== */
+@media (min-width: 900px){
+
+  /* Bottom mobile tab-bar ab top par ek proper desktop nav ban jaata hai */
+  .navbar{
+    position:fixed; top:0; left:0; right:0; bottom:auto;
+    background:#fff; border-top:none; border-bottom:1px solid var(--line);
+    padding:14px 28px; justify-content:center; gap:6px; z-index:300;
+    box-shadow:0 2px 16px rgba(20,23,31,.05);
+  }
+  .nav-btn{ flex:none; flex-direction:row; gap:8px; padding:10px 20px; margin:0; border-radius:10px; }
+  .nav-btn .ic{ font-size:18px; }
+  .nav-btn .lb{ font-size:13.5px; }
+  .nav-btn.active::after{ display:none; }
+  .nav-btn.active{ background:#eef1ff; }
+
+  /* Search bar ab top-nav ke neeche settle hoti hai, aur chauda hoti hai */
+  .top-search{
+    top:78px;
+    width:min(640px, calc(100% - 48px));
+  }
+
+  /* Page content — mobile ki tang 520px chodh ke poora desktop canvas use karo */
+  .page{ max-width:1280px; padding:158px 40px 64px; }
+
+  /* Hero banner — text + illustration side by side, zyada breathing room */
+  .hero{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:44px 52px; gap:28px;
+  }
+  .hero h1{ font-size:32px; }
+  .hero p{ font-size:15px; }
+  .hero-note{ max-width:600px; }
+
+  /* Card grids — 2 column mobile se badhkar 4-5 column desktop grid */
+  .grid,
+  #page-books > .grid,
+  .all-batches-grid .grid{
+    grid-template-columns:repeat(auto-fill, minmax(228px,1fr)) !important;
+    gap:22px !important;
+  }
+
+  #page-all .batch-card .body{ padding:14px 16px 16px; }
+  #page-all .batch-card h3{ font-size:15px; }
+  #page-all .batch-card .batch-desc{ min-height:38px; }
+
+  /* Mobile-only "PAID" ribbon batch cards ke liye tha — desktop grid mein zaroorat nahi */
+  #page-all .all-batches-grid .batch-card::before{ content:none; }
+
+  /* Support / Orders — bahut chaude na ho jaayein, comfortably centered rakho */
+  #page-support .faq-item,
+  #page-support .contact-card,
+  #page-orders > div{ max-width:760px; margin-left:auto; margin-right:auto; }
+
+  #page-orders #ordersAccountBar,
+  #page-orders #ordersSignedOut,
+  #page-orders #ordersList{ max-width:760px; margin-left:auto; margin-right:auto; }
+}
+
+
+/* =====================================================================
+   2) PRODUCT_PAGE.HTML — Batch product / SEO page
+   (.container yahan aur book_page.html dono mein hai isliye ID se scope
+   kiya hai taaki dono file ek dusre se collide na karein)
+   ===================================================================== */
+@media (min-width: 900px){
+
+  .container:has(#pgBuyBtn){
+    display:grid;
+    grid-template-columns: 1fr 380px;
+    gap:28px;
+    max-width:1120px;
+    margin:28px auto;
+    padding:0 24px;
+    grid-template-areas:
+      "banner  banner"
+      "header  sidebar"
+      "overview sidebar"
+      "description sidebar"
+      "demo    sidebar"
+      "topics  sidebar"
+      "reviews reviews"
+      "footer  footer";
+  }
+
+  /* Container ke 10 direct children ko upar ke areas se map karo,
+     exact DOM order ke hisaab se (banner, header, overview-card,
+     description-card, demo-card, pricing-card, topics-card,
+     reviews-card, footer, mobile-space-filler) */
+  .container:has(#pgBuyBtn) > *:nth-child(1){ grid-area:banner; }
+  .container:has(#pgBuyBtn) > *:nth-child(2){ grid-area:header; }
+  .container:has(#pgBuyBtn) > *:nth-child(3){ grid-area:overview; }
+  .container:has(#pgBuyBtn) > *:nth-child(4){ grid-area:description; }
+  .container:has(#pgBuyBtn) > *:nth-child(5){ grid-area:demo; }
+  .container:has(#pgBuyBtn) > *:nth-child(6){
+    grid-area:sidebar; position:sticky; top:24px; align-self:start;
+  }
+  .container:has(#pgBuyBtn) > *:nth-child(7){ grid-area:topics; }
+  .container:has(#pgBuyBtn) > *:nth-child(8){ grid-area:reviews; }
+  .container:has(#pgBuyBtn) > *:nth-child(9){ grid-area:footer; }
+  .container:has(#pgBuyBtn) > *:nth-child(10){ display:none; } /* .space-for-sticky — desktop pe zaroorat nahi */
+
+  .header{ text-align:left; border-radius:18px; padding:32px 34px; }
+  .header h1{ font-size:26px; }
+  .banner-container{ margin-bottom:0; }
+
+  /* Mobile bottom sticky buy-bar hata do — sidebar (pricing card) ab CTA hai */
+  .sticky-footer{ display:none; }
+  body:has(#pgBuyBtn){ padding:0; }
+
+  .gallery-scroll{ flex-wrap:wrap; }
+  .media-card{ flex:0 0 150px; height:266px; }
+
+  .reviews-grid{
+    display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;
+  }
+}
+
+
+/* =====================================================================
+   3) BOOK_PAGE.HTML — Book product / SEO page
+   ===================================================================== */
+@media (min-width: 900px){
+
+  .container:has(#bookCoverImg){
+    display:grid;
+    grid-template-columns: 300px 1fr;
+    column-gap:36px;
+    max-width:1100px;
+    margin:28px auto;
+    padding:0 24px;
+    grid-template-areas:
+      "cover title"
+      "cover meta"
+      "cover download"
+      "cover preview";
+  }
+
+  .cover-card-wrapper{ grid-area:cover; position:sticky; top:24px; align-self:start; margin-bottom:0; }
+  .cover-card{ max-width:none; width:100%; }
+  #bookTitle{ grid-area:title; font-size:24px; }
+  #bookMetaBar{ grid-area:meta; }
+  #heroDownloadBtn{ grid-area:download; margin-bottom:20px; }
+  #previewSection{ grid-area:preview; }
+
+  /* In sabko poori chaudai (dono column) mein full-width niche stack karo */
+  #examTagsCard, #specsCard, #aboutCard, #topicsCard, .report-link-container{
+    grid-column: 1 / -1;
+    margin-top:16px;
+  }
+
+  .pdf-vertical-stack{
+    flex-direction:row; flex-wrap:wrap; justify-content:flex-start; gap:16px;
+  }
+  .pdf-page-card{ max-width:220px; }
+
+  .specs-grid, .toc-grid{ grid-template-columns:repeat(3, 1fr); }
+
+  /* Mobile bottom price bar redundant hai — hero-download-btn/sidebar already CTA hai */
+  .sticky-bar{ display:none; }
+}
+
+
+/* =====================================================================
+   4) CHAT-3.HTML — Order/payment chat flow
+   Poore body ko ek centered "app window" jaisa card banaya gaya hai,
+   koi HTML structure change nahi kiya — sirf CSS.
+   ===================================================================== */
+@media (min-width: 900px){
+
+  html:has(.chat-header){
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh; background:#E7E8F6;
+  }
+
+  body:has(.chat-header){
+    max-width:480px; width:100%;
+    height:min(780px, 92vh);
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:0 26px 60px rgba(30,27,58,.30);
+    border:1px solid rgba(255,255,255,.5);
+  }
+}
