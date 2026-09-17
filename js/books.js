@@ -18,20 +18,21 @@ function isFreePrice(priceStr){
 }
 
 function renderBookCard(b){
-  var demoBtn = (b.demoType === 'popup')
-    ? '<a class="btn btn-demo" href="javascript:void(0)" onclick="openPdfDemo(event)">Demo</a>'
-    : '<a class="btn btn-demo" href="'+b.demoHref+'" rel="noopener" target="_blank">Demo</a>';
+  var initial = (b.by || b.name || '?').trim().charAt(0).toUpperCase();
   var free = isFreePrice(b.price);
-  var priceHtml = free
-    ? '<span class="price b free-price">FREE</span>'
-    : '<span class="price b">'+b.price+'</span>';
-  var freeRibbon = free ? '<span class="free-ribbon">FREE</span>' : '';
-  return '<div class="card book-card" data-category="book">' + freeRibbon + '<img alt="'+b.alt+'" src="'+toDirectImageUrl(b.img)+'"/>'
-    + '<div class="book-meta-force"><div class="book-cat-force">'+b.by+'</div><div class="book-name-force">'+b.name+'</div></div>'
-    + '<div class="body"><div class="by">'+b.by+'</div><h3>'+b.name+'</h3>'
-    + '<div class="price-row">'+priceHtml+'</div>'
-    + '<div class="btn-row">'+demoBtn
-    + '<a class="btn btn-buy b" href="'+b.buyHref+'" rel="noopener" target="_blank">Buy</a></div></div></div>';
+  return '<a class="cc-card" href="'+b.buyHref+'" rel="noopener" target="_blank">'
+    + '<div class="cc-thumb-wrap"><span class="cc-badge '+(free?'free':'paid')+'">'+(free?'FREE':'PAID')+'</span>'
+    + '<img class="cc-thumb" alt="'+b.alt+'" src="'+toDirectImageUrl(b.img)+'"/></div>'
+    + '<div class="cc-body">'
+      + '<h3 class="cc-title">'+b.name+'</h3>'
+      + '<p class="cc-desc">'+(b.desc||b.by||'')+'</p>'
+      + '<div class="cc-footer">'
+        + '<span class="cc-avatar">'+initial+'</span>'
+        + '<div class="cc-meta"><span class="cc-edu">'+(b.by||'')+'</span>'
+          + '<div class="cc-tags"><span class="cc-tag">Book</span><span class="cc-tag price">'+(free?'FREE':b.price)+'</span></div>'
+        + '</div>'
+      + '</div>'
+    + '</div></a>';
 }
 
 
@@ -49,6 +50,7 @@ function renderBookCard(b){
       if (!booksGrid) return;
       items.forEach(function(p){
         if (p.category !== 'book') return;
+        if (p.visibility === 'private') return;
         var mapped = {
           alt: p.name,
           img: p.cardImage || '',

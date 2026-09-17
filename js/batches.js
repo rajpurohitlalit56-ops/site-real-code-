@@ -2,18 +2,21 @@
    Depends on: js/batches-data.js (BATCHES array) — load that script BEFORE this one. */
 
 function renderBatchCard(b){
-  var demoBtn = b.demoHref
-    ? '<a class="btn btn-demo" href="'+b.demoHref+'" rel="noopener" target="_blank">Demo</a>'
-    : '<span class="btn btn-demo disabled">'+(b.demoLabel||'Demo unavailable')+'</span>';
-  var durationSpan = b.duration
-    ? '<span style="font-size:11px;color:var(--sub);font-weight:600;">'+b.duration+'</span>'
-    : '';
-  return '<div class="card batch-card"><img alt="'+b.alt+'" class="batch-cover" src="'+b.img+'"/>'
-    + '<div class="body"><div class="by">'+b.by+'</div><h3>'+b.name+'</h3>'
-    + '<div class="batch-desc">'+b.desc+'</div>'
-    + '<div class="price-row"><span class="price b">'+b.price+'</span>'+durationSpan+'</div>'
-    + '<div class="btn-row">'+demoBtn
-    + '<a class="btn btn-buy b" href="'+b.buyHref+'" rel="noopener" target="_blank">Buy</a></div></div></div>';
+  var initial = (b.by || b.name || '?').trim().charAt(0).toUpperCase();
+  var tag = b.duration || 'Batch';
+  return '<a class="cc-card" href="'+b.buyHref+'" rel="noopener" target="_blank">'
+    + '<div class="cc-thumb-wrap"><span class="cc-badge paid">PAID</span>'
+    + '<img class="cc-thumb" alt="'+b.alt+'" src="'+b.img+'"/></div>'
+    + '<div class="cc-body">'
+      + '<h3 class="cc-title">'+b.name+'</h3>'
+      + '<p class="cc-desc">'+(b.desc||'')+'</p>'
+      + '<div class="cc-footer">'
+        + '<span class="cc-avatar">'+initial+'</span>'
+        + '<div class="cc-meta"><span class="cc-edu">'+(b.by||'')+'</span>'
+          + '<div class="cc-tags"><span class="cc-tag">'+tag+'</span><span class="cc-tag price">'+b.price+'</span></div>'
+        + '</div>'
+      + '</div>'
+    + '</div></a>';
 }
 
 
@@ -32,6 +35,7 @@ function renderBatchCard(b){
       if (!batchesGrid) return;
       items.forEach(function(p){
         if (p.category !== 'batch') return;
+        if (p.visibility === 'private') return;
         var mapped = {
           alt: p.name,
           img: p.cardImage || '',

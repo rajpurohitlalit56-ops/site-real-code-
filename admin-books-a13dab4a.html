@@ -245,6 +245,67 @@
     font-weight:600;
     margin-top:6px;
   }
+/* ===== MODERN LOOK UPGRADE ===== */
+.card{ border-radius:18px; box-shadow:0 2px 12px rgba(30,27,58,0.06); }
+.save-btn{ box-shadow:0 10px 22px rgba(16,185,129,0.28); }
+
+.dropzone{
+  border-radius:14px;
+  border:1.5px dashed #C7CCE8;
+  padding:24px 14px;
+  text-align:center;
+  background:#FAFBFF;
+  position:relative;
+}
+.dropzone:hover{ border-color:var(--indigo); background:#F3F4FE; }
+.dropzone.dragover{ background:#EEF0FD; border-color:var(--indigo); }
+.dropzone::before{
+  content:"⬆️";
+  display:block;
+  width:46px; height:46px;
+  line-height:46px;
+  margin:0 auto 10px;
+  background:#E0E4FF;
+  border-radius:50%;
+  font-size:18px;
+}
+.dropzone-hint{ font-size:12.5px; color:var(--muted); margin-top:2px; font-weight:600; }
+
+.visibility-card{
+  background:linear-gradient(135deg,#EEF0FD 0%,#F7F8FE 100%);
+  border:1px solid #DEE1F7;
+}
+.visibility-switch-row{ display:flex; align-items:flex-start; gap:14px; }
+.switch{ position:relative; display:inline-block; width:50px; height:28px; flex-shrink:0; margin-top:2px; }
+.switch input{ opacity:0; width:0; height:0; }
+.slider{
+  position:absolute; cursor:pointer; inset:0;
+  background:#FCA5A5; transition:.25s; border-radius:28px;
+}
+.slider:before{
+  position:absolute; content:""; height:22px; width:22px; left:3px; bottom:3px;
+  background:#fff; transition:.25s; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,0.25);
+}
+.switch input:checked + .slider{ background:var(--emerald); }
+.switch input:checked + .slider:before{ transform:translateX(22px); }
+.visibility-text{ flex:1; }
+.visibility-main{ font-size:14px; font-weight:700; margin-bottom:4px; }
+.visibility-main.pub{ color:#047857; }
+.visibility-main.priv{ color:#991B1B; }
+
+.visibility-pill{
+  display:inline-block; font-size:10.5px; font-weight:800; letter-spacing:.03em;
+  padding:3px 10px; border-radius:20px; margin:10px 12px 0;
+}
+.visibility-pill.pub{ background:#D1FAE5; color:#047857; }
+.visibility-pill.priv{ background:#FEE2E2; color:#991B1B; }
+
+.vis-tag{
+  display:inline-block; font-size:9.5px; font-weight:800; padding:1px 7px;
+  border-radius:8px; margin-left:5px; vertical-align:middle;
+}
+.vis-tag.pub{ background:#D1FAE5; color:#047857; }
+.vis-tag.priv{ background:#FEE2E2; color:#991B1B; }
 </style>
 </head>
 <body>
@@ -268,6 +329,19 @@
     </div>
 
     <div class="container">
+     <div class="card visibility-card">
+  <div class="card-title">👁️ Visibility</div>
+  <div class="visibility-switch-row">
+    <label class="switch">
+      <input type="checkbox" id="fVisibility" checked onchange="updateVisibilityLabel()">
+      <span class="slider"></span>
+    </label>
+    <div class="visibility-text">
+      <div class="visibility-main pub" id="visibilityLabel">🌍 Public — site pe sabko dikhega</div>
+      <div class="hint">Private rakhoge to ye product site pe kisi ko nahi dikhega — sirf tum direct link se test kar paoge. Poora ready hone ke baad wapas Public kar dena. Default hamesha Public hi rehta hai.</div>
+    </div>
+  </div>
+</div>
 
       <div class="card">
         <div class="card-title">2. Basic Jaankari</div>

@@ -1,396 +1,880 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Admin — Batches Add/Edit</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --indigo:#4F46E5;
-    --indigo-dark:#3730A3;
-    --emerald:#10B981;
-    --bg:#F5F6FB;
-    --text:#1E1B3A;
-    --muted:#6B7280;
-    --border:#E2E1F2;
-  }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  body{
-    margin:0;
-    font-family:'Sora',sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    padding-bottom:40px;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Admin Dashboard — Batches Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --primary-hover: #4338CA;
+      --primary-subtle: #EEF2FF;
+      --emerald: #10B981;
+      --emerald-subtle: #ECFDF5;
+      --rose: #EF4444;
+      --rose-subtle: #FEF2F2;
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --text: #0F172A;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-card: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -2px rgba(15, 23, 42, 0.04);
+    }
 
-  /* ============ PASSWORD GATE ============ */
-  #gateScreen{
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    padding:24px;
-  }
-  #gateScreen .lock-icon{font-size:40px; margin-bottom:14px;}
-  #gateScreen h2{margin:0 0 6px; font-size:18px;}
-  #gateScreen p{margin:0 0 20px; font-size:13px; color:var(--muted); text-align:center;}
-  #gateScreen input{
-    width:100%; max-width:280px;
-    padding:13px 14px;
-    border-radius:12px;
-    border:1.5px solid var(--border);
-    font-family:'Sora',sans-serif;
-    font-size:14px;
-    text-align:center;
-    margin-bottom:12px;
-  }
-  #gateScreen button{
-    width:100%; max-width:280px;
-    background:var(--indigo);
-    color:#fff;
-    border:none;
-    padding:13px;
-    border-radius:12px;
-    font-family:'Sora',sans-serif;
-    font-weight:700;
-    font-size:14px;
-    cursor:pointer;
-  }
-  #gateError{color:#DC2626; font-size:12.5px; margin-top:10px; display:none;}
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: 'Plus Jakarta Sans', 'Sora', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 90px;
+    }
 
-  /* ============ MAIN PANEL ============ */
-  #mainPanel{display:none;}
+    /* ============ PASSWORD GATE ============ */
+    #gateScreen {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: radial-gradient(circle at top, #EEF2FF 0%, #F8FAFC 100%);
+    }
+    .gate-box {
+      width: 100%;
+      max-width: 360px;
+      background: var(--surface);
+      padding: 32px 24px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-card);
+      text-align: center;
+    }
+    .gate-icon {
+      width: 52px; height: 52px;
+      background: var(--primary-subtle);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 16px;
+    }
+    .gate-box h2 { margin: 0 0 6px; font-size: 20px; font-weight: 700; }
+    .gate-box p { margin: 0 0 20px; font-size: 13.5px; color: var(--text-muted); }
+    .gate-box input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border);
+      font-size: 14px;
+      text-align: center;
+      margin-bottom: 12px;
+      outline: none;
+    }
+    .gate-box input:focus { border-color: var(--primary); }
+    .gate-box button {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #gateError { color: var(--rose); font-size: 12.5px; margin-top: 10px; display: none; font-weight: 600; }
 
-  .header{
-    background:linear-gradient(135deg, var(--indigo) 0%, var(--indigo-dark) 100%);
-    color:#fff;
-    padding:18px 16px;
-  }
-  .header h1{margin:0; font-size:18px;}
-  .header p{margin:4px 0 0; font-size:12.5px; opacity:0.85;}
+    /* ============ NAVBAR ============ */
+    .top-nav {
+      background: #0F172A;
+      color: #fff;
+      padding: 16px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+    .top-nav-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .top-nav h1 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .top-nav p { margin: 2px 0 0; font-size: 12px; color: #94A3B8; }
+    .nav-badge {
+      background: rgba(79, 70, 229, 0.25);
+      border: 1px solid rgba(129, 140, 248, 0.35);
+      color: #C7D2FE;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
 
-  .container{padding:16px;}
+    /* ============ DASHBOARD LAYOUT ============ */
+    .dashboard-layout {
+      max-width: 1180px;
+      margin: 24px auto;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    @media(min-width: 960px) {
+      .dashboard-layout {
+        grid-template-columns: 1fr 340px;
+        align-items: start;
+      }
+    }
 
-  .card{
-    background:#fff;
-    border:1px solid var(--border);
-    border-radius:16px;
-    padding:16px;
-    margin-bottom:16px;
-  }
-  .card-title{
-    font-size:13px;
-    font-weight:700;
-    color:var(--indigo-dark);
-    text-transform:uppercase;
-    letter-spacing:0.03em;
-    margin-bottom:12px;
-  }
+    /* ============ CARDS ============ */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-card);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #F1F5F9;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge-step {
+      width: 22px; height: 22px;
+      background: var(--primary-subtle);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 800;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-  label{
-    display:block;
-    font-size:12.5px;
-    font-weight:600;
-    margin-bottom:5px;
-    margin-top:14px;
-  }
-  label:first-of-type{margin-top:0;}
-  .hint{font-size:11px; color:var(--muted); margin-top:3px;}
-  input[type=text], input[type=number]{
-    width:100%;
-    padding:11px 12px;
-    border-radius:10px;
-    border:1px solid var(--border);
-    font-family:'Sora',sans-serif;
-    font-size:13.5px;
-    background:#FAFAFD;
-  }
-  input:focus{outline:2px solid var(--indigo); outline-offset:-1px;}
+    /* ============ FORMS ============ */
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media(min-width: 600px) {
+      .form-grid-2 { grid-template-columns: 1fr 1fr; }
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-group:last-child { margin-bottom: 0; }
 
-  textarea{
-    width:100%;
-    padding:11px 12px;
-    border-radius:10px;
-    border:1px solid var(--border);
-    font-family:'Sora',sans-serif;
-    font-size:13.5px;
-    background:#FAFAFD;
-    resize:vertical;
-  }
-  textarea:focus{outline:2px solid var(--indigo); outline-offset:-1px;}
-  code{background:#EEF0FD; padding:1px 5px; border-radius:5px; font-size:11px;}
+    label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+    .hint { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
 
-  .radio-row{display:flex; gap:10px; margin-top:2px;}
-  .radio-opt{
-    flex:1;
-    display:flex; align-items:center; justify-content:center; gap:6px;
-    padding:10px;
-    border-radius:10px;
-    border:1.5px solid var(--border);
-    font-size:13px; font-weight:600;
-    cursor:pointer;
-    color:var(--muted);
-  }
-  .radio-opt.selected{border-color:var(--indigo); background:#EEF0FD; color:var(--indigo-dark);}
-  .radio-opt input{display:none;}
+    input[type=text], input[type=number], textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      font-family: inherit;
+      font-size: 13.5px;
+      background: #FAFBFD;
+      color: var(--text);
+      transition: all 0.15s ease;
+    }
+    input[type=text]:focus, input[type=number]:focus, textarea:focus {
+      outline: none;
+      background: #FFF;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    }
+    textarea { resize: vertical; line-height: 1.5; }
 
-  .channel-field{display:none;}
-  .channel-field.show{display:block;}
+    /* ============ VISIBILITY TOGGLE ============ */
+    .visibility-card {
+      background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 100%);
+      border: 1px solid #E0E7FF;
+    }
+    .visibility-switch-row { display: flex; align-items: center; gap: 16px; }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background: #CBD5E1; transition: .25s; border-radius: 28px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px;
+      background: #fff; transition: .25s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .switch input:checked + .slider { background: var(--emerald); }
+    .switch input:checked + .slider:before { transform: translateX(22px); }
 
-  .preview-card{
-    background:#fff; border:1px solid var(--border); border-radius:14px;
-    overflow:hidden; max-width:220px; box-shadow:0 2px 10px rgba(79,70,229,0.08);
-  }
-  .preview-img{
-    width:100%; height:110px; background:#EEF0FD;
-    display:flex; align-items:center; justify-content:center;
-    font-size:34px; color:var(--indigo); overflow:hidden;
-  }
-  .preview-img img{width:100%; height:100%; object-fit:cover;}
-  .preview-body{padding:10px 12px;}
-  .preview-name{font-size:13px; font-weight:700; line-height:1.3; margin-bottom:6px; min-height:34px;}
-  .preview-price{
-    display:inline-block; background:rgba(16,185,129,0.12); color:#047857;
-    font-weight:700; font-size:12px; padding:2px 9px; border-radius:8px; margin-bottom:8px;
-  }
-  .preview-btn{background:var(--indigo); color:#fff; text-align:center; font-size:12px; font-weight:700; padding:8px; border-radius:8px;}
+    .visibility-text { flex: 1; }
+    .visibility-main { font-size: 13.5px; font-weight: 700; margin-bottom: 2px; }
+    .visibility-main.pub { color: #047857; }
+    .visibility-main.priv { color: #B91C1C; }
 
-  .save-btn{
-    width:100%;
-    background:var(--emerald);
-    color:#fff; border:none;
-    font-family:'Sora',sans-serif; font-weight:700; font-size:14.5px;
-    padding:14px; border-radius:14px; cursor:pointer; margin-top:6px;
-  }
-  .save-btn:active{transform:scale(0.98);}
-  .save-btn:disabled{opacity:0.6; cursor:not-allowed;}
+    /* ============ MEDIA & DROPZONES ============ */
+    .media-block {
+      border: 1px solid #EEF2F6;
+      background: #FAFBFC;
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .media-block:last-child { margin-bottom: 0; }
+    .media-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-  #statusMsg{
-    display:none;
-    padding:12px 14px;
-    border-radius:12px;
-    font-size:13px;
-    font-weight:600;
-    margin-top:14px;
-    text-align:center;
-  }
-  #statusMsg.success{display:block; background:#D1FAE5; color:#047857;}
-  #statusMsg.error{display:block; background:#FEE2E2; color:#991B1B;}
+    .dropzone {
+      border-radius: var(--radius-md);
+      border: 1.5px dashed #CBD5E1;
+      padding: 16px 12px;
+      text-align: center;
+      background: #FFF;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .dropzone:hover {
+      border-color: var(--primary);
+      background: #F5F7FF;
+    }
+    .dropzone.dragover {
+      background: var(--primary-subtle);
+      border-color: var(--primary);
+    }
+    .dropzone-hint { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+    .dropzone input[type=file] {
+      display: block;
+      margin: 6px auto 0;
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+    .img-preview {
+      display: none;
+      max-width: 140px;
+      max-height: 120px;
+      border-radius: var(--radius-sm);
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      object-fit: cover;
+    }
+    .upload-status { font-size: 11.5px; font-weight: 600; margin-top: 6px; }
 
-  /* Existing products list */
-  .existing-item{
-    display:flex; align-items:center; gap:10px;
-    padding:10px; border:1px solid var(--border); border-radius:12px; margin-bottom:8px;
-  }
-  .existing-item .thumb{
-    width:40px; height:40px; border-radius:8px; background:#EEF0FD;
-    display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; overflow:hidden;
-  }
-  .existing-item .thumb img{width:100%; height:100%; object-fit:cover;}
-  .existing-item .info{flex:1; min-width:0;}
-  .existing-item .info .n{font-size:12.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .existing-item .info .p{font-size:11px; color:var(--muted);}
-  .edit-btn{
-    background:#EEF0FD; border:1px solid var(--border); color:var(--indigo-dark);
-    font-family:'Sora',sans-serif; font-size:11px; font-weight:700;
-    padding:6px 12px; border-radius:8px; cursor:pointer; flex-shrink:0;
-  }
-  .delete-btn{
-    background:#FEE2E2; border:1px solid #FECACA; color:#991B1B;
-    font-family:'Sora',sans-serif; font-size:11px; font-weight:700;
-    padding:6px 12px; border-radius:8px; cursor:pointer; flex-shrink:0;
-  }
-  .item-actions{display:flex; gap:6px; flex-shrink:0;}
-  #existingList .empty{font-size:12.5px; color:var(--muted); text-align:center; padding:10px;}
+    /* Demo Media Item styling */
+    .demo-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #FFF;
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+    }
 
-  /* Image upload */
-  input[type=file]{
-    width:100%;
-    padding:10px 12px;
-    border-radius:10px;
-    border:1.5px dashed var(--border);
-    font-family:'Sora',sans-serif;
-    font-size:12.5px;
-    background:#FAFAFD;
-    color:var(--muted);
-  }
-  .dropzone{
-    border-radius:12px;
-    border:1.5px dashed var(--border);
-    padding:10px;
-    transition:background 0.15s ease, border-color 0.15s ease;
-  }
-  .dropzone.dragover{
-    background:#EEF0FD;
-    border-color:var(--indigo);
-  }
-  .dropzone-hint{
-    font-size:11px; color:var(--muted); text-align:center; margin-top:6px;
-  }
+    /* ============ PREVIEW CARD ============ */
+    .sidebar-preview {
+      position: sticky;
+      top: 86px;
+    }
+    .preview-card-wrap {
+      background: #FFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      width: 100%;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+    .preview-banner {
+      position: relative;
+      width: 100%;
+      height: 135px;
+      background: #EEF2FF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      overflow: hidden;
+    }
+    .preview-banner img { width: 100%; height: 100%; object-fit: cover; }
+    .preview-pill {
+      position: absolute;
+      top: 8px; right: 8px;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(4px);
+    }
+    .preview-pill.priv { color: #DC2626; border: 1px solid #FCA5A5; }
+    .preview-pill.pub { color: #059669; border: 1px solid #A7F3D0; }
+    .preview-body { padding: 12px 14px; }
+    .preview-name {
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.35;
+      margin-bottom: 6px;
+      height: 36px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .preview-desc-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      height: 32px;
+      line-height: 1.45;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .preview-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .preview-price {
+      background: var(--emerald-subtle);
+      color: #047857;
+      font-weight: 800;
+      font-size: 12.5px;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+    .preview-validity {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .preview-btn {
+      background: var(--primary);
+      color: #fff;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px;
+      border-radius: var(--radius-sm);
+    }
 
-  .img-preview{
-    display:none;
-    max-width:110px;
-    max-height:110px;
-    border-radius:10px;
-    margin-top:8px;
-    border:1px solid var(--border);
-    object-fit:cover;
-  }
-  .upload-status{
-    font-size:11.5px;
-    font-weight:600;
-    margin-top:6px;
-  }
-</style>
+    /* ============ FIXED ACTION BAR ============ */
+    .action-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid var(--border);
+      padding: 12px 20px;
+      z-index: 50;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+    }
+    .action-bar-inner {
+      max-width: 1180px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .save-btn {
+      background: var(--emerald);
+      color: #fff;
+      border: none;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 12px 28px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .save-btn:hover { background: #059669; }
+    .save-btn:active { transform: scale(0.98); }
+    .save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    #statusMsg {
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      font-weight: 600;
+      display: none;
+    }
+    #statusMsg.success { display: inline-block; background: var(--emerald-subtle); color: #047857; }
+    #statusMsg.error { display: inline-block; background: var(--rose-subtle); color: #991B1B; }
+
+    /* ============ EXISTING PRODUCTS ============ */
+    .existing-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 10px;
+      background: #FFF;
+    }
+    .existing-item .thumb {
+      width: 44px; height: 44px;
+      border-radius: 8px;
+      background: var(--primary-subtle);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; overflow: hidden;
+    }
+    .existing-item .thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .existing-item .info { flex: 1; min-width: 0; }
+    .existing-item .info .n {
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .existing-item .info .p { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+    .vis-tag {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-left: 6px;
+      display: inline-block;
+    }
+    .vis-tag.pub { background: var(--emerald-subtle); color: #047857; }
+    .vis-tag.priv { background: var(--rose-subtle); color: #991B1B; }
+
+    .item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .edit-btn {
+      background: var(--primary-subtle);
+      border: 1px solid #C7D2FE;
+      color: var(--primary);
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .edit-btn:hover { background: #E0E7FF; }
+    .delete-btn {
+      background: var(--rose-subtle);
+      border: 1px solid #FECACA;
+      color: #DC2626;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .delete-btn:hover { background: #FEE2E2; }
+    #existingList .empty { font-size: 13px; color: var(--text-muted); text-align: center; padding: 18px; }
+  </style>
 </head>
 <body>
 
-<!-- PASSWORD GATE -->
+  <!-- PASSWORD GATE -->
   <div id="gateScreen">
-    <div class="lock-icon">🔒</div>
-    <h2>Admin Access</h2>
-    <p>Yeh page sirf admin ke liye hai</p>
-    <input type="text" id="passwordInput" placeholder="Password daalein" autocomplete="off">
-    <button onclick="checkPassword()">Unlock</button>
-    <div id="gateError">Galat password, dobara try karein.</div>
+    <div class="gate-box">
+      <div class="gate-icon">🔒</div>
+      <h2>Admin Access</h2>
+      <p>Authorized Admin Area</p>
+      <input type="password" id="passwordInput" placeholder="Password daalein" autocomplete="off">
+      <button onclick="checkPassword()">Unlock Dashboard</button>
+      <div id="gateError">Galat password, dobara try karein.</div>
+    </div>
   </div>
 
-  
   <!-- MAIN ADMIN PANEL -->
-  <div id="mainPanel">
-    <div class="header">
-      <h1>📗 Batch Add/Edit Karo</h1>
-      <p>Save dabate hi turant site pe live ho jayega — koi code/GitHub nahi chahiye</p>
-    </div>
-
-    <div class="container">
-
-      <div class="card">
-        <div class="card-title">2. Basic Jaankari</div>
-
-        <label>Product/Batch ka poora naam</label>
-        <input type="text" id="fName" placeholder="jaise: Bhutesh Sir Math Arith Advn Pre Mains" oninput="onNameChange()">
-
-        <label>Product ID (auto-generate hota hai, naya add karte waqt khali chhodo)</label>
-        <input type="text" id="fSlug" placeholder="bhutesh_sir_math_arith_advn">
-        <div class="hint">Existing product edit karna ho toh neeche list se "Edit" dabao — ID khud aa jayegi</div>
-
-        <label>Icon (emoji)</label>
-        <input type="text" id="fIcon" value="📗" maxlength="4">
-
-        <label>Price (₹)</label>
-        <input type="number" id="fPrice" placeholder="49" oninput="updatePreview()">
-
-        <label>Educator/By line (optional)</label>
-        <input type="text" id="fBy" placeholder="jaise: Bhutesh Sir · E1 Coaching">
-
-        <label>Description (optional, card pe dikhegi)</label>
-        <input type="text" id="fDesc" placeholder="jaise: Recorded lectures, bilingual notes...">
-
-        <label>Duration (optional, batch ke liye)</label>
-        <input type="text" id="fDuration" placeholder="VALIDITY-1 year">
-
-        <label>Demo link (optional)</label>
-        <input type="text" id="fDemo" placeholder="https://t.me/...">
-      </div>
-
-      <div class="card">
-        <div class="card-title">3. Images</div>
-
-        <label>Catalogue card image</label>
-        <div class="dropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropToInput(event,'fCardImageFile')">
-          <input type="file" accept="image/*" id="fCardImageFile" onchange="handleImageUpload(this,'fCardImage','cardImgPreview')">
-          <div class="dropzone-hint">ya photo yahan drag karke chodo</div>
+  <div id="mainPanel" style="display: none;">
+    <header class="top-nav">
+      <div class="top-nav-inner">
+        <div>
+          <h1>📗 Batch Manager</h1>
+          <p>Instant live sync enabled</p>
         </div>
-        <img class="img-preview" id="cardImgPreview">
-        <div class="upload-status" id="cardImgPreviewStatus"></div>
-        <input type="hidden" id="fCardImage">
-
-        <label>Payment QR image</label>
-        <div class="dropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropToInput(event,'fQrImageFile')">
-          <input type="file" accept="image/*" id="fQrImageFile" onchange="handleImageUpload(this,'fQrImage','qrImgPreview')">
-          <div class="dropzone-hint">ya photo yahan drag karke chodo</div>
-        </div>
-        <img class="img-preview" id="qrImgPreview">
-        <div class="upload-status" id="qrImgPreviewStatus"></div>
-        <input type="hidden" id="fQrImage">
+        <div class="nav-badge">Category: Batch</div>
       </div>
+    </header>
 
-      <div class="card" id="channelCard">
-        <div class="card-title">4. Telegram Channel</div>
-        <label>Channel ID</label>
-        <input type="text" id="fChannel" placeholder="-1001234567890">
-        <div class="hint">Bot ko us channel mein pehle admin banana zaroori hai</div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">5. Product Page (SEO page) Content</div>
-        <div class="hint" style="margin:0 0 12px;">Ye sab fields product-page.html par dikhengi (Wall of Fame/reviews section chhod ke — wo fixed rakha hai)</div>
-
-        <label>Banner image (16:9, product page ke sabse upar)</label>
-        <div class="dropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropToInput(event,'fBannerImageFile')">
-          <input type="file" accept="image/*" id="fBannerImageFile" onchange="handleImageUpload(this,'fBannerImage','bannerImgPreview')">
-          <div class="dropzone-hint">ya photo yahan drag karke chodo</div>
-        </div>
-        <img class="img-preview" id="bannerImgPreview">
-        <div class="upload-status" id="bannerImgPreviewStatus"></div>
-        <input type="hidden" id="fBannerImage">
-
-        <label>Plan badge text</label>
-        <input type="text" id="fPlanBadge" placeholder="jaise: Best Value Master Plan">
-
-        <label>Course Overview (ek line = ek bullet point)</label>
-        <textarea id="fOverview" rows="5" placeholder="Instructor: Bhutesh Sir&#10;Target Exams: SSC CGL, CHSL, MTS&#10;Content Included: Complete Arithmetic + Advanced Maths&#10;Study Material: Bilingual Handwritten PDF Notes&#10;Community: Private Telegram Group Access"></textarea>
-
-        <label>Detailed course description (paragraphs, ek blank line se naya paragraph)</label>
-        <textarea id="fFullDescription" rows="6" placeholder="Is batch mein har topic ko basic se advanced level tak cover kiya gaya hai..."></textarea>
-
-        <label>Demo gallery</label>
-        <div class="hint" style="margin-bottom:8px;">Photos seedha upload karo. Video ke liye ek thumbnail photo upload karo aur uska link (YouTube/Telegram/direct .mp4) daalo.</div>
-        <div id="demoItemsList"></div>
-        <div style="display:flex; gap:8px; margin-top:8px;">
-          <button type="button" class="edit-btn" onclick="addDemoItem('image')" style="flex:1; padding:10px;">+ Photo add karo</button>
-          <button type="button" class="edit-btn" onclick="addDemoItem('video')" style="flex:1; padding:10px;">+ Video add karo</button>
-        </div>
-        <input type="hidden" id="fDemoMedia">
-
-        <label>Topics covered (comma se separate karo)</label>
-        <input type="text" id="fTopics" placeholder="Number System, HCF & LCM, Percentage, Ratio & Proportion">
-      </div>
-
-      <button class="save-btn" id="saveBtn" onclick="saveProduct()">✅ Save Product</button>
-      <div id="statusMsg"></div>
-
-      <div class="card" style="margin-top:20px;">
-        <div class="card-title">👀 Live Preview</div>
-        <div class="preview-card">
-          <div class="preview-img" id="prevImg">📗</div>
-          <div class="preview-body">
-            <div class="preview-name" id="prevName">Product ka naam yahan aayega</div>
-            <div class="preview-price" id="prevPrice">₹0</div>
-            <div class="preview-btn">Buy Now</div>
+    <div class="dashboard-layout">
+      <!-- LEFT COLUMN (FORM CONTROLS) -->
+      <main>
+        <!-- Visibility Card -->
+        <div class="card visibility-card">
+          <div class="visibility-switch-row">
+            <label class="switch">
+              <input type="checkbox" id="fVisibility" checked onchange="updateVisibilityLabel()">
+              <span class="slider"></span>
+            </label>
+            <div class="visibility-text">
+              <div class="visibility-main priv" id="visibilityLabel">🔒 Private — sirf tum dekh paoge (testing mode)</div>
+              <div class="hint">Testing ke baad Public switch on karein taaki user catalogue par display ho sake.</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="card">
-        <div class="card-title">📋 Firebase se Add Kiye Gaye Batches</div>
-        <div id="existingList"><div class="empty">Loading...</div></div>
-      </div>
+        <!-- 1. Basic Details -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span class="badge-step">1</span>
+              Basic Details
+            </div>
+          </div>
 
+          <div class="form-group">
+            <label>Product / Batch Ka Poora Naam</label>
+            <input type="text" id="fName" placeholder="jaise: Bhutesh Sir Math Arith Advn Pre Mains" oninput="onNameChange(); updatePreviewExtended();">
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>Product ID (Slug)</label>
+              <input type="text" id="fSlug" placeholder="Auto-generated agar khali chhodenge">
+              <div class="hint">Naya batch add karte waqt khali chhod sakte hain</div>
+            </div>
+
+            <div class="form-group">
+              <label>Price (₹)</label>
+              <input type="number" id="fPrice" placeholder="49" oninput="updatePreviewExtended()">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Educator / By Line</label>
+            <input type="text" id="fBy" placeholder="jaise: Bhutesh Sir · E1 Coaching" oninput="updateOverviewAuto()">
+            <div class="hint">Ye naam overview mein automatic Teacher field mein save hoga</div>
+          </div>
+        </div>
+
+        <!-- 2. All Media & Images In Sequence -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span class="badge-step">2</span>
+              Media & Images (Ek Hi Jagah)
+            </div>
+          </div>
+
+          <!-- 1. Card Image -->
+          <div class="media-block">
+            <div class="media-title">🖼️ 1. Catalogue Card Image</div>
+            <div class="dropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropToInput(event,'fCardImageFile')">
+              <div class="dropzone-hint">Card photo drag karein ya browse karein</div>
+              <input type="file" accept="image/*" id="fCardImageFile" onchange="handleImageUpload(this,'fCardImage','cardImgPreview')">
+            </div>
+            <img class="img-preview" id="cardImgPreview">
+            <div class="upload-status" id="cardImgPreviewStatus"></div>
+            <input type="hidden" id="fCardImage">
+          </div>
+
+          <!-- 2. QR Image -->
+          <div class="media-block">
+            <div class="media-title">💳 2. Payment QR Image</div>
+            <div class="dropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropToInput(event,'fQrImageFile')">
+              <div class="dropzone-hint">QR image drag karein ya browse karein</div>
+              <input type="file" accept="image/*" id="fQrImageFile" onchange="handleImageUpload(this,'fQrImage','qrImgPreview')">
+            </div>
+            <img class="img-preview" id="qrImgPreview">
+            <div class="upload-status" id="qrImgPreviewStatus"></div>
+            <input type="hidden" id="fQrImage">
+          </div>
+
+          <!-- 3. Demo Gallery -->
+          <div class="media-block">
+            <div class="media-title">🎬 3. Demo Media Gallery (Photos / Videos)</div>
+            <div class="hint" style="margin-bottom:8px;">Photos direct upload karein. Video ke liye thumbnail + video link add karein.</div>
+            <div id="demoItemsList"><div class="empty">Koi demo media add nahi kiya gaya hai</div></div>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+              <button type="button" class="edit-btn" onclick="addDemoItem('image')" style="flex:1; padding:9px;">+ Photo Add Karein</button>
+              <button type="button" class="edit-btn" onclick="addDemoItem('video')" style="flex:1; padding:9px;">+ Video Add Karein</button>
+            </div>
+            <input type="hidden" id="fDemoMedia" value="">
+          </div>
+
+          <!-- 4. Banner Image -->
+          <div class="media-block">
+            <div class="media-title">🌌 4. Product Page Banner Image (16:9)</div>
+            <div class="dropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropToInput(event,'fBannerImageFile')">
+              <div class="dropzone-hint">16:9 Banner photo drag karein ya upload karein</div>
+              <input type="file" accept="image/*" id="fBannerImageFile" onchange="handleImageUpload(this,'fBannerImage','bannerImgPreview')">
+            </div>
+            <img class="img-preview" id="bannerImgPreview">
+            <div class="upload-status" id="bannerImgPreviewStatus"></div>
+            <input type="hidden" id="fBannerImage">
+          </div>
+        </div>
+
+        <!-- 3. Channel Automation -->
+        <div class="card" id="channelCard">
+          <div class="card-header">
+            <div class="card-title">
+              <span class="badge-step">3</span>
+              Telegram Automation
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Telegram Channel ID</label>
+            <input type="text" id="fChannel" placeholder="-1001234567890">
+            <div class="hint">⚠️ Bot ko iss private channel mein pehle Admin banana compulsory hai.</div>
+          </div>
+        </div>
+
+        <!-- 4. Descriptions & Topics -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span class="badge-step">4</span>
+              Course Description & Topics
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Detailed Course Description</label>
+            <textarea id="fFullDescription" rows="6" placeholder="Is batch mein har topic basic se cover kiya gaya hai..." oninput="updateCardDescAuto(); updatePreviewExtended();"></textarea>
+            <div class="hint">💡 Iski pehli 1-2 lines automatic card short description ke taur par generate ho jayengi.</div>
+          </div>
+
+          <div class="form-group">
+            <label>Topics Covered (Search Tags / Comma Separated)</label>
+            <input type="text" id="fTopics" placeholder="Number System, HCF & LCM, Percentage, Ratio & Proportion">
+          </div>
+        </div>
+
+        <!-- HIDDEN AUTO FIELDS (Preserves Database Compatibility) -->
+        <input type="hidden" id="fIcon" value="📗">
+        <input type="hidden" id="fDuration" value="VALIDITY-1 year">
+        <input type="hidden" id="fDemo" value="">
+        <input type="hidden" id="fPlanBadge" value="BEST VALUE MASTER PLAN">
+        <input type="hidden" id="fDesc" value="">
+        <textarea id="fOverview" style="display:none;"></textarea>
+
+        <!-- 5. Database Batches -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span class="badge-step">5</span>
+              Database Ke Batches
+            </div>
+          </div>
+          <div id="existingList">
+            <!-- Dynamic products load here via admin-common.js -->
+          </div>
+        </div>
+      </main>
+
+      <!-- RIGHT SIDEBAR (LIVE UNIFORM PREVIEW) -->
+      <aside class="sidebar-preview">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">👀 Live Card Preview</div>
+          </div>
+          <div class="preview-card-wrap">
+            <div class="preview-banner" id="prevImg">
+              <span class="preview-pill priv" id="prevVisBadge">🔒 PRIVATE</span>
+              📗
+            </div>
+            <div class="preview-body">
+              <div class="preview-name" id="prevName">Product ka naam yahan aayega</div>
+              <div class="preview-desc-text" id="prevDesc">Description ki shuruaat yahan aayegi...</div>
+              <div class="preview-meta">
+                <span class="preview-price" id="prevPrice">₹49</span>
+                <span class="preview-validity">Validity: 1 Year</span>
+              </div>
+              <div class="preview-btn">Buy Now</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- FIXED SAVE ACTION BAR -->
+    <div class="action-bar">
+      <div class="action-bar-inner">
+        <div id="statusMsg"></div>
+        <button class="save-btn" id="saveBtn" onclick="prepareAndSaveProduct()">
+          <span>💾</span> Save Batch Now
+        </button>
+      </div>
     </div>
   </div>
 
+  <script>
+    var ADMIN_CATEGORY = 'batch';
 
+    // 1. Auto-generate Overview with Teacher & Fixed details
+    function updateOverviewAuto() {
+      var teacherName = document.getElementById('fBy')?.value.trim() || "Expert Faculty";
+      var overviewText = 
+        "TEACHER: " + teacherName + "\n" +
+        "TARGET EXAM: All SSC Exams & Railway\n" +
+        "CONTENT INCLUDED: All Lecture & bilingual pdf \n" +
+        "ACCESS: Instant Access With Private Telegram channel\n" +
+        "COPYRIGHT: No Problem";
+      
+      var overviewField = document.getElementById('fOverview');
+      if (overviewField) {
+        overviewField.value = overviewText;
+      }
+    }
 
-<script>
-  var ADMIN_CATEGORY = 'batch';
-</script>
-<script src="js/admin-common.js"></script>
+    // 2. Auto-extract uniform Short Description from Detailed Description
+    function updateCardDescAuto() {
+      var fullDesc = document.getElementById('fFullDescription')?.value.trim() || "";
+      var shortDesc = "";
+      if (fullDesc) {
+        // Line break ya pehle 95 characters tak cleanly slice karna
+        var firstLine = fullDesc.split('\n')[0].trim();
+        if (firstLine.length > 95) {
+          shortDesc = firstLine.substring(0, 92) + "...";
+        } else {
+          shortDesc = firstLine;
+        }
+      }
+      var descField = document.getElementById('fDesc');
+      if (descField) {
+        descField.value = shortDesc;
+      }
+      var prevDescEl = document.getElementById('prevDesc');
+      if (prevDescEl) {
+        prevDescEl.innerText = shortDesc || "Description ki shuruaat yahan aayegi...";
+      }
+    }
 
+    // 3. Live Card Preview Update
+   function updatePreview(){
+  const nameEl = document.getElementById('fName');
+  const priceEl = document.getElementById('fPrice');
+  if (!nameEl || !priceEl) return;
+
+  const name = nameEl.value || 'Product ka naam yahan aayega';
+  const price = priceEl.value.trim();
+  const iconEl = document.getElementById('fIcon');
+  const icon = (iconEl && iconEl.value) || '📗';
+  const cardImageEl = document.getElementById('fCardImage');
+  const cardImage = cardImageEl ? cardImageEl.value : '';
+  const visToggle = document.getElementById('fVisibility');
+  const isPublic = !visToggle || visToggle.checked;
+
+  const prevNameEl = document.getElementById('prevName');
+  if (prevNameEl) prevNameEl.textContent = name;
+  const prevPriceEl = document.getElementById('prevPrice');
+  if (prevPriceEl) prevPriceEl.textContent = (!price || Number(price) === 0) ? 'FREE' : ('₹' + price);
+
+  const imgBox = document.getElementById('prevImg');
+  if (imgBox) {
+    /* Badge ko pehle bacha lo, warna innerHTML overwrite se delete ho jata hai */
+    const existingBadge = document.getElementById('prevVisBadge');
+    const badgeHTML = existingBadge ? existingBadge.outerHTML : '';
+    if (cardImage) {
+      imgBox.innerHTML = badgeHTML + `<img src="${cardImage}" onerror="this.parentElement.innerHTML='${badgeHTML}${icon}'">`;
+    } else {
+      imgBox.innerHTML = badgeHTML + icon;
+    }
+  }
+
+  /* Purane simple admin layout ke liye (agar kahin .preview-card class use ho) */
+  const previewCard = document.querySelector('.preview-card');
+  if (previewCard) {
+    let pill = previewCard.querySelector('.visibility-pill');
+    if (!pill) {
+      pill = document.createElement('div');
+      pill.className = 'visibility-pill';
+      previewCard.insertBefore(pill, previewCard.firstChild);
+    }
+    pill.textContent = isPublic ? '🌍 PUBLIC' : '🔒 PRIVATE';
+    pill.classList.toggle('pub', isPublic);
+    pill.classList.toggle('priv', !isPublic);
+  }
+
+  /* Naye modern layout ka badge turant sync karo */
+  const badgeEl = document.getElementById('prevVisBadge');
+  if (badgeEl) {
+    badgeEl.className = 'preview-pill ' + (isPublic ? 'pub' : 'priv');
+    badgeEl.textContent = isPublic ? '🌍 PUBLIC' : '🔒 PRIVATE';
+  }
+}
+
+    // 4. Hook save button to ensure all automatic defaults are set right before saving
+    function prepareAndSaveProduct() {
+      updateOverviewAuto();
+      updateCardDescAuto();
+
+      // Ensure hidden defaults
+      if (!document.getElementById('fDuration').value) {
+        document.getElementById('fDuration').value = "VALIDITY-1 year";
+      }
+      if (!document.getElementById('fPlanBadge').value) {
+        document.getElementById('fPlanBadge').value = "BEST VALUE MASTER PLAN";
+      }
+      if (!document.getElementById('fIcon').value) {
+        document.getElementById('fIcon').value = "📗";
+      }
+
+      if (typeof saveProduct === "function") {
+        saveProduct();
+      }
+    }
+
+    // Initialize auto fields on load
+    window.addEventListener('DOMContentLoaded', function() {
+      updateOverviewAuto();
+      updateCardDescAuto();
+      updatePreviewExtended();
+    });
+  </script>
+  <script src="js/admin-common.js"></script>
 </body>
 </html>

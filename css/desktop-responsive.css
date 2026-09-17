@@ -1,0 +1,83 @@
+/* ===== GLOBAL (all pages) ===== */
+@media (min-width:768px){
+  body{ padding-bottom:0 !important; }
+}
+
+/* ===== index.html ===== */
+@media (min-width:768px){
+  .page{ max-width:1200px !important; margin:0 auto !important; padding-left:24px !important; padding-right:24px !important; }
+  .hero{ padding:36px 32px; }
+  .hero h1{ font-size:28px; }
+}
+@media (min-width:1024px){
+  .navbar{
+    position:fixed !important; top:0 !important; bottom:auto !important;
+    left:0; right:0; height:56px; padding:0;
+    background:#fff; border-top:none; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    box-shadow:0 2px 10px rgba(20,23,31,.05); z-index:40;
+  }
+  .navbar .nav-btn{ flex:0 0 auto; flex-direction:row; gap:6px; padding:8px 18px; margin:0; }
+  .navbar .nav-btn .ic{ font-size:16px; }
+  .navbar .nav-btn::after{ display:none; }
+  .top-search{ top:14px; }
+  .page{ padding-top:126px !important; }
+}
+
+/* ===== product_page.html ===== */
+@media (min-width:768px){
+  .container:has(.pricing-card){ max-width:700px; }
+  .course-description, .feature-list, .plan-features ul, .review-text{ max-width:65ch; }
+}
+@media (min-width:1024px){
+  .container:has(.pricing-card){
+    max-width:1100px !important;
+    display:grid !important;
+    grid-template-columns:1fr 360px;
+    gap:28px;
+    align-items:start;
+  }
+  .pricing-card{
+    grid-column:2 !important;
+    grid-row:1 / -1 !important;
+    align-self:start;
+    position:sticky !important;
+    top:24px;
+  }
+  .sticky-footer{ display:none !important; }
+  .space-for-sticky{ display:none !important; }
+}
+
+/* ===== book_page.html ===== */
+@media (min-width:768px){
+  .container:has(.cover-card-wrapper){ max-width:680px; margin:0 auto; }
+  #aboutText, .features-list, .toc-item{ max-width:65ch; }
+  .specs-grid{ grid-template-columns:repeat(4,1fr) !important; }
+  .toc-grid{ grid-template-columns:repeat(3,1fr) !important; }
+}
+@media (min-width:1024px){
+  .container:has(.cover-card-wrapper){ margin-right:380px; margin-left:auto; }
+  .sticky-bar{
+    position:fixed !important;
+    bottom:auto !important; top:100px !important;
+    left:auto !important;
+    right:max(20px, calc((100vw - 1200px) / 2 + 20px)) !important;
+    width:320px !important;
+    margin:0 !important;
+    border-radius:18px;
+  }
+}
+
+/* ===== chat-3.html ===== */
+@media (min-width:768px){
+  body:has(.chat-header){
+    max-width:480px !important;
+    margin:32px auto !important;
+    height:calc(100vh - 64px) !important;
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:0 20px 60px rgba(20,23,31,.18);
+    border:1px solid #e2e4ee;
+    background:#eef0fa;
+  }
+}
