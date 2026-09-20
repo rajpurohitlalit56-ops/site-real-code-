@@ -901,21 +901,57 @@
             100% { transform: scale(1); }
         }
         .google-signin-btn.active-pop { animation: googleBtnActivePop 0.4s cubic-bezier(.2,.9,.3,1.2); }
+
+        /* ===== SKELETON LOADER — shown while product data is still being fetched =====
+           Own shimmer sweep (light-grey -> lighter/white -> light-grey), looping
+           forever, shaped like THIS page's own layout (16:9 banner + title lines +
+           subtitle + demo-pill), not the book page's portrait skeleton. */
+        @keyframes skShimmer{
+          0%{background-position:160% 0;}
+          100%{background-position:-60% 0;}
+        }
+        .sk-block{
+          background:linear-gradient(90deg,#e8eaef 20%,#f7f8fa 45%,#e8eaef 70%);
+          background-size:300% 100%;
+          animation:skShimmer 1.6s ease-in-out infinite;
+          border-radius:6px;
+          display:block;
+        }
+        .page-skeleton{ display:none; }
+        body.is-loading .page-skeleton{ display:block; }
+        body.is-loading .real-content{ display:none !important; }
+        .sk-banner{ width:100%; aspect-ratio:16/9; border-radius:0; }
+        .sk-header{ padding:16px; }
+        .sk-title-line{ height:20px; margin-bottom:10px; }
+        .sk-pill-line{ height:32px; width:150px; border-radius:20px; margin-top:8px; }
+        @media (prefers-reduced-motion: reduce){
+          .sk-block{ animation:none; }
+        }
     </style>
-<link rel="stylesheet" href="css/desktop-responsive.css">)
+<link rel="stylesheet" href="css/desktop.css">
 </head>
-<body>
+<body class="is-loading">
 
 <div class="container">
 
+    <!-- SKELETON — shown until real product data arrives -->
+    <div class="page-skeleton" aria-hidden="true">
+        <span class="sk-block sk-banner"></span>
+        <div class="sk-header">
+            <span class="sk-block sk-title-line" style="width:88%;"></span>
+            <span class="sk-block sk-title-line" style="width:55%;height:14px;"></span>
+            <span class="sk-block sk-pill-line"></span>
+        </div>
+    </div>
+
     <!-- 16:9 Image Header Banner -->
-    <div class="banner-container">
+    <div class="banner-container real-content">
         <button class="back-btn" id="backBtn" aria-label="Back">←</button>
         <img src="" alt="" class="banner-img" id="pgBannerImg">
     </div>
 
     <!-- Main Header Title -->
-    <div class="header">
+    <div class="header real-content">
         <h1 id="pgTitle">Loading...</h1>
         <p id="pgSubtitle"></p>
         <a href="#demoSection" class="demo-pill">🎬 Watch Demo</a>
@@ -1060,7 +1096,7 @@
         el.innerHTML = MEDIA_ITEMS.map(function(item, i){
             var playOverlay = item.type === 'video' ? '<div class="play-overlay"><div class="play-icon"></div></div>' : '';
             var tag = item.type === 'video' ? 'Demo Video' : 'Class Note';
-            return '<div class="media-card" onclick="openModal(' + i + ')"><img src="' + escapeHtml(item.thumb) + '" alt="Demo">' +
+            return '<div class="media-card" onclick="openModal(' + i + ')"><img src="' + escapeHtml(item.thumb) + '" alt="Demo" loading="lazy" decoding="async">' +
                 '<span class="media-tag">' + tag + '</span>' + playOverlay + '</div>';
         }).join('');
         document.getElementById('demoSection').style.display = MEDIA_ITEMS.length ? '' : 'none';
@@ -1112,9 +1148,11 @@
         document.getElementById('pgStickyBuyBtn').href = buyHref;
         document.getElementById('pgStickyPrice').textContent = '₹' + p.price;
         document.getElementById('pgStickyDuration').textContent = p.duration || '';
+        document.body.classList.remove('is-loading');
     }
 
     function showLoadError(msg){
+        document.body.classList.remove('is-loading');
         document.getElementById('pgTitle').textContent = msg;
     }
 

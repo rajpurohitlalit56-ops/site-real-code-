@@ -106,6 +106,20 @@
     return 'Pending';
   }
 
+  /* Ek skeleton order-card — asli order-card jaisi hi shape (thumb + naam line +
+     date/price line + status pill), bas shimmer blocks ke saath. Orders fetch hone
+     tak 3 iske dikhte hain, load hote hi asli list se replace ho jaate hain. */
+  function orderSkeletonHTML(){
+    return '<div class="order-card skeleton-card" aria-hidden="true"><div class="row">'
+      + '<div class="thumb"><span class="sk-block" style="width:42px;height:42px;border-radius:10px;"></span></div>'
+      + '<div class="info">'
+      + '<span class="sk-block" style="width:72%;height:12px;margin-bottom:6px;"></span>'
+      + '<span class="sk-block" style="width:42%;height:10px;"></span>'
+      + '</div>'
+      + '<span class="sk-block" style="width:60px;height:22px;border-radius:20px;"></span>'
+      + '</div></div>';
+  }
+
   function orderCardHTML(o){
     var isBatch = o.category !== 'book';
     var showJoin = isBatch && o.status === 'approved' && o.inviteLink;
@@ -125,6 +139,7 @@
 
   function loadOrders(user){
     signedOutEl.style.display = 'none';
+    loadingEl.innerHTML = orderSkeletonHTML() + orderSkeletonHTML() + orderSkeletonHTML();
     loadingEl.style.display = 'block';
     emptyEl.style.display = 'none';
     listEl.innerHTML = '';

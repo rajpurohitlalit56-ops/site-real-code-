@@ -68,6 +68,28 @@
   .header-info{display:flex; flex-direction:column; min-width:0;}
   .header-info .name{font-weight:600; font-size:15px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .header-info .status{font-size:12px; opacity:0.85; display:flex; align-items:center; gap:5px;}
+
+  /* ===== SKELETON — small shimmer while product name/icon are still loading =====
+     Same shimmer idea as the rest of the site (light-grey -> lighter/white ->
+     light-grey, infinite loop), sized to fit this header's own name line. The
+     chat messages already have their own "typing…" loading cue, so only the
+     header needs one here. */
+  @keyframes skShimmer{
+    0%{background-position:160% 0;}
+    100%{background-position:-60% 0;}
+  }
+  .sk-block{
+    background:linear-gradient(90deg,rgba(255,255,255,.35) 20%,rgba(255,255,255,.7) 45%,rgba(255,255,255,.35) 70%);
+    background-size:300% 100%;
+    animation:skShimmer 1.6s ease-in-out infinite;
+    border-radius:6px;
+    display:inline-block;
+  }
+  .name.is-loading{ color:transparent; }
+  .name.is-loading .sk-block{ width:120px; height:13px; vertical-align:middle; }
+  @media (prefers-reduced-motion: reduce){
+    .sk-block{ animation:none; }
+  }
   .status-dot{width:6px;height:6px;border-radius:50%;background:var(--emerald); display:inline-block;}
 
   /* Chat body */
@@ -422,7 +444,7 @@
 
   ::-webkit-scrollbar{width:0px;}
 </style>
-<link rel="stylesheet" href="css/desktop.css">)
+<link rel="stylesheet" href="css/desktop.css">
 </head>
 <body>
 
@@ -432,7 +454,7 @@
     </a>
     <div class="header-avatar" id="headerAvatar">📚</div>
     <div class="header-info">
-      <div class="name" id="headerName">Loading...</div>
+      <div class="name is-loading" id="headerName"><span class="sk-block"></span></div>
       <div class="status"><span class="status-dot"></span> Order Assistant • Online</div>
     </div>
   </div>
@@ -952,6 +974,7 @@ async function init(){
     if (!res.ok) throw new Error('Product not found');
     product = await res.json();
 
+    document.getElementById("headerName").classList.remove('is-loading');
     document.getElementById("headerName").textContent = product.name;
     document.getElementById("headerAvatar").textContent = product.icon;
 
@@ -960,6 +983,7 @@ async function init(){
       resumeIfExists();
     }
   } catch (err) {
+    document.getElementById("headerName").classList.remove('is-loading');
     document.getElementById("headerName").textContent = "Product not found";
     await addBotBubble(`⚠️ Yeh product nahi mila. Sahi link se try karein, ya support se sampark karein.`);
   }

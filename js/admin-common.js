@@ -1,8 +1,10 @@
 /* ==== Shared Admin logic — used by both admin-batches and admin-books pages ====
-   Each page sets `var ADMIN_CATEGORY = 'batch'` or `'book'` BEFORE loading this file. */
+   Each page sets `var ADMIN_CATEGORY = 'batch'` or `'book'` BEFORE loading this file.
+   This keeps all the save/upload/list logic in one place instead of duplicated twice. */
 
 let ADMIN_PASSWORD = '';
 
+/* Field jo sirf admin-books page par hote hain (admin-batches par nahi) — safely read/set karo */
 function getVal(id){
   const el = document.getElementById(id);
   return el ? el.value.trim() : '';
@@ -15,11 +17,12 @@ function setVal(id, val){
 function checkPassword(){
   const input = document.getElementById('passwordInput').value;
   if (!input) return;
+  // Password ka actual verification server-side (save-product function) hota hai.
+  // Yahan sirf UI unlock hoti hai taaki form dikhe.
   ADMIN_PASSWORD = input;
   document.getElementById('gateScreen').style.display = 'none';
   document.getElementById('mainPanel').style.display = 'block';
   renderDemoItems();
-  updateVisibilityLabel();
   loadExistingProducts();
 }
 
@@ -38,48 +41,40 @@ function onNameChange(){
   updatePreview();
 }
 
-/* ---- PUBLIC / PRIVATE visibility toggle ---- */
-function updateVisibilityLabel(){
-  const toggle = document.getElementById('fVisibility');
-  const label = document.getElementById('visibilityLabel');
-  if (!toggle || !label) return;
-  const isPublic = toggle.checked;
-  label.textContent = isPublic
-    ? '🌍 Public — site pe sabko dikhega'
-    : '🔒 Private — sirf tum dekh paoge (testing mode)';
-  label.className = 'visibility-main ' + (isPublic ? 'pub' : 'priv');
-  updatePreview();
-}
-
 function updatePreview(){
   const name = document.getElementById('fName').value || 'Product ka naam yahan aayega';
   const price = document.getElementById('fPrice').value.trim();
   const icon = document.getElementById('fIcon').value || '📗';
   const cardImage = document.getElementById('fCardImage').value;
-  const visToggle = document.getElementById('fVisibility');
-  const isPublic = !visToggle || visToggle.checked;
 
   document.getElementById('prevName').textContent = name;
   document.getElementById('prevPrice').textContent = (!price || Number(price) === 0) ? 'FREE' : ('₹' + price);
 
   const imgBox = document.getElementById('prevImg');
-  if (cardImage) {
-    imgBox.innerHTML = `<img src="${cardImage}" onerror="this.parentElement.innerHTML='${icon}'">`;
-  } else {
-    imgBox.textContent = icon;
-  }
-
-  const previewCard = document.querySelector('.preview-card');
-  if (previewCard) {
-    let pill = previewCard.querySelector('.visibility-pill');
-    if (!pill) {
-      pill = document.createElement('div');
-      pill.className = 'visibility-pill';
-      previewCard.insertBefore(pill, previewCard.firstChild);
+  if (imgBox) {
+    /* Agar preview box ke andar koi visibility badge span hai (prevVisBadge), use pehle
+       bacha lo — warna innerHTML overwrite se wo delete ho jaata hai. Books page par
+       yeh badge exist hi nahi karta, to yahan kuch nahi hota (safe no-op). */
+    const existingBadge = document.getElementById('prevVisBadge');
+    const badgeHTML = existingBadge ? existingBadge.outerHTML : '';
+    if (cardImage) {
+      imgBox.innerHTML = badgeHTML + `<img src="${cardImage}" onerror="this.parentElement.innerHTML='${badgeHTML}${icon}'">`;
+    } else {
+      imgBox.innerHTML = badgeHTML + icon;
     }
-    pill.textContent = isPublic ? '🌍 PUBLIC' : '🔒 PRIVATE';
-    pill.classList.toggle('pub', isPublic);
-    pill.classList.toggle('priv', !isPublic);
+  }
+}
+
+/* Har admin page (batches/books) apna khud ka updatePreviewExtended() bhi define karta hai
+   (badge sync, author-line sync, waghera). Yahan se refresh karte waqt agar wo function
+   available ho to usko use karo, warna sirf base updatePreview() pe fallback karo — isse
+   dono page ka extra preview data (jaise books ka author-line) save/edit/clear ke baad
+   bhi turant sahi dikhta rehta hai. */
+function refreshPreview(){
+  if (typeof updatePreviewExtended === 'function') {
+    updatePreviewExtended();
+  } else {
+    updatePreview();
   }
 }
 
@@ -140,7 +135,7 @@ function renderDemoItems(){
       <div class="info">
         <div class="n" style="margin-bottom:6px;">${item.type === 'video' ? '🎬 Video' : '🖼️ Photo'} #${idx + 1}</div>
         <input type="file" accept="image/*" id="demoThumbFile${idx}" onchange="uploadDemoThumb(this, ${idx})" style="display:none;">
-        <div class="dropzone" style="padding:14px;" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropToInput(event,'demoThumbFile${idx}')" onclick="document.getElementById('demoThumbFile${idx}').click()">
+        <div class="dropzone" style="padding:8px; margin-bottom:6px;" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropToInput(event,'demoThumbFile${idx}')" onclick="document.getElementById('demoThumbFile${idx}').click()">
           <div class="dropzone-hint" style="margin:0;">📷 Click ya drag karke photo upload karo</div>
         </div>
         <div class="upload-status" id="demoThumbStatus${idx}"></div>
@@ -193,7 +188,7 @@ function parseDemoMediaString(text){
   });
 }
 
-function handleImageUpload(fileInputEl, hiddenInputId, previewId){
+function handleImageUpload(fileInputEl, hiddenInputId, previewId, mirrorToId){
   const file = fileInputEl.files[0];
   if (!file) return;
 
@@ -220,11 +215,17 @@ function handleImageUpload(fileInputEl, hiddenInputId, previewId){
 
       if (result.success) {
         document.getElementById(hiddenInputId).value = result.url;
+        /* Kuch fields (jaise book cover) ek hi photo se do jagah (card + product page)
+           dikhani hoti hain — mirrorToId diya ho to wahi URL doosre hidden field me bhi bhar do. */
+        if (mirrorToId) {
+          const mirrorEl = document.getElementById(mirrorToId);
+          if (mirrorEl) mirrorEl.value = result.url;
+        }
         previewEl.src = result.url;
         previewEl.style.display = 'block';
         statusEl.textContent = 'Upload ho gaya ✅';
         statusEl.style.color = '#047857';
-        if (hiddenInputId === 'fCardImage') updatePreview();
+        if (hiddenInputId === 'fCardImage' || mirrorToId === 'fCardImage') updatePreview();
       } else {
         statusEl.textContent = 'Upload fail: ' + (result.error || 'unknown error');
         statusEl.style.color = '#991B1B';
@@ -252,10 +253,6 @@ function clearForm(){
   const channelField = document.getElementById('fChannel');
   if (channelField) channelField.value = '';
 
-  const visToggle = document.getElementById('fVisibility');
-  if (visToggle) visToggle.checked = true; // naya product default PUBLIC
-  updateVisibilityLabel();
-
   document.getElementById('fBannerImage').value = '';
   document.getElementById('fPlanBadge').value = '';
   document.getElementById('fOverview').value = '';
@@ -273,9 +270,14 @@ function clearForm(){
   setVal('fFileSize', '');
   setVal('fDownloadLink', '');
   setVal('fOldPrice', '');
-  document.getElementById('fBannerImageFile').value = '';
-  document.getElementById('bannerImgPreview').style.display = 'none';
-  document.getElementById('bannerImgPreviewStatus').textContent = '';
+  /* Banner image ke apne dropzone/preview sirf batches page par hote hain — books page par
+     cover image card-image field ke saath hi combine ho chuki hai, to yahan guard laga do. */
+  const bannerFileEl = document.getElementById('fBannerImageFile');
+  if (bannerFileEl) bannerFileEl.value = '';
+  const bannerPreviewEl = document.getElementById('bannerImgPreview');
+  if (bannerPreviewEl) bannerPreviewEl.style.display = 'none';
+  const bannerStatusEl = document.getElementById('bannerImgPreviewStatus');
+  if (bannerStatusEl) bannerStatusEl.textContent = '';
   demoItems = [];
   renderDemoItems();
 
@@ -295,8 +297,6 @@ async function saveProduct(){
   const slug = document.getElementById('fSlug').value.trim();
   const price = document.getElementById('fPrice').value.trim();
   const isBatch = ADMIN_CATEGORY === 'batch';
-  const visToggle = document.getElementById('fVisibility');
-  const visibility = (visToggle && !visToggle.checked) ? 'private' : 'public';
 
   if (!name || !slug) {
     showStatus('error', 'Kripya naam aur ID zaroor bharein.');
@@ -317,8 +317,8 @@ async function saveProduct(){
     cardImage: document.getElementById('fCardImage').value.trim(),
     qr: document.getElementById('fQrImage').value.trim(),
     channelId: isBatch ? (document.getElementById('fChannel') ? document.getElementById('fChannel').value.trim() : '') : '',
-    visibility: visibility,
 
+    /* Product page (SEO page) fields */
     bannerImage: document.getElementById('fBannerImage').value.trim(),
     planBadge: document.getElementById('fPlanBadge').value.trim(),
     overview: document.getElementById('fOverview').value.trim(),
@@ -326,6 +326,7 @@ async function saveProduct(){
     demoMedia: document.getElementById('fDemoMedia').value.trim(),
     topics: document.getElementById('fTopics').value.trim(),
 
+    /* Book product page (book_page.html) ke extra fields — sirf admin-books page par hote hain */
     previewImages: getVal('fPreviewImages'),
     examTags: getVal('fExamTags'),
     author: getVal('fAuthor'),
@@ -354,7 +355,7 @@ async function saveProduct(){
     if (res.status === 401) {
       showStatus('error', 'Galat password — save nahi hua.');
     } else if (result.success) {
-      showStatus('success', `✅ "${name}" save ho gaya! (${visibility === 'public' ? 'Public — site pe live hai' : 'Private — abhi sirf tumhe dikhega'})`);
+      showStatus('success', `✅ "${name}" save ho gaya! Site pe live hai.`);
       clearForm();
       loadExistingProducts();
     } else {
@@ -381,26 +382,25 @@ async function loadExistingProducts(){
   try {
     const res = await fetch('/.netlify/functions/get-all-products');
     const allItems = await res.json();
+    /* Is admin page par sirf apni category (batch YA book) ke products dikhte hain */
     const items = allItems.filter(p => p.category === ADMIN_CATEGORY);
     if (!items.length) {
       listEl.innerHTML = '<div class="empty">Abhi tak Firebase se koi product add nahi hua</div>';
       return;
     }
-    listEl.innerHTML = items.map(p => {
-      const isPriv = p.visibility === 'private';
-      return `
+    listEl.innerHTML = items.map(p => `
       <div class="existing-item">
         <div class="thumb">${p.cardImage ? `<img src="${p.cardImage}">` : (p.icon || '📦')}</div>
         <div class="info">
-          <div class="n">${p.name} ${isPriv ? '<span class="vis-tag priv">🔒 Private</span>' : '<span class="vis-tag pub">🌍 Public</span>'}</div>
+          <div class="n">${p.name}</div>
           <div class="p">${(!p.price || Number(p.price) === 0) ? 'FREE' : '₹' + p.price} · ${p.category}</div>
         </div>
         <div class="item-actions">
           <button class="edit-btn" onclick='editProduct(${JSON.stringify(p).replace(/'/g,"&#39;")})'>Edit</button>
           <button class="delete-btn" onclick="deleteProduct('${p.id}', '${p.name.replace(/'/g,"\\'")}')">Delete</button>
         </div>
-      </div>`;
-    }).join('');
+      </div>
+    `).join('');
   } catch (err) {
     listEl.innerHTML = '<div class="empty">Load nahi ho paya</div>';
   }
@@ -445,10 +445,6 @@ function editProduct(p){
   const channelField = document.getElementById('fChannel');
   if (channelField) channelField.value = p.channelId || '';
 
-  const visToggle = document.getElementById('fVisibility');
-  if (visToggle) visToggle.checked = p.visibility !== 'private';
-  updateVisibilityLabel();
-
   document.getElementById('fBannerImage').value = p.bannerImage || '';
   document.getElementById('fPlanBadge').value = p.planBadge || '';
   document.getElementById('fOverview').value = p.overview || '';
@@ -473,10 +469,15 @@ function editProduct(p){
   renderDemoItems();
 
   const bannerPreview = document.getElementById('bannerImgPreview');
-  if (p.bannerImage) { bannerPreview.src = p.bannerImage; bannerPreview.style.display = 'block'; }
-  else { bannerPreview.style.display = 'none'; }
-  document.getElementById('bannerImgPreviewStatus').textContent = p.bannerImage ? 'Existing image' : '';
-  document.getElementById('bannerImgPreviewStatus').style.color = 'var(--muted)';
+  if (bannerPreview) {
+    if (p.bannerImage) { bannerPreview.src = p.bannerImage; bannerPreview.style.display = 'block'; }
+    else { bannerPreview.style.display = 'none'; }
+  }
+  const bannerStatusEl = document.getElementById('bannerImgPreviewStatus');
+  if (bannerStatusEl) {
+    bannerStatusEl.textContent = p.bannerImage ? 'Existing image' : '';
+    bannerStatusEl.style.color = 'var(--muted)';
+  }
 
   const cardPreview = document.getElementById('cardImgPreview');
   if (p.cardImage) { cardPreview.src = p.cardImage; cardPreview.style.display = 'block'; }
@@ -491,16 +492,10 @@ function editProduct(p){
   document.getElementById('qrImgPreviewStatus').textContent = p.qr ? 'Existing image' : '';
   document.getElementById('qrImgPreviewStatus').style.color = 'var(--muted)';
 
-  updatePreview();
+  refreshPreview();
   window.scrollTo({top:0, behavior:'smooth'});
 }
-  updatePreview();
-  if (typeof updateOverviewAuto === 'function') updateOverviewAuto();
-  if (typeof updateCardDescAuto === 'function') updateCardDescAuto();
-  if (typeof updatePreviewExtended === 'function') updatePreviewExtended();
-  window.scrollTo({top:0, behavior:'smooth'});
 
 document.addEventListener('DOMContentLoaded', function(){
-  updateVisibilityLabel();
   updatePreview();
 });

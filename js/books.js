@@ -17,40 +17,117 @@ function isFreePrice(priceStr){
   return !digits || Number(digits) === 0;
 }
 
-function renderBookCard(b){
-  var initial = (b.by || b.name || '?').trim().charAt(0).toUpperCase();
-  var free = isFreePrice(b.price);
-  return '<a class="cc-card" href="'+b.buyHref+'" rel="noopener" target="_blank">'
-    + '<div class="cc-thumb-wrap"><span class="cc-badge '+(free?'free':'paid')+'">'+(free?'FREE':'PAID')+'</span>'
-    + '<img class="cc-thumb" alt="'+b.alt+'" src="'+toDirectImageUrl(b.img)+'"/></div>'
-    + '<div class="cc-body">'
-      + '<h3 class="cc-title">'+b.name+'</h3>'
-      + '<p class="cc-desc">'+(b.desc||b.by||'')+'</p>'
-      + '<div class="cc-footer">'
-        + '<span class="cc-avatar">'+initial+'</span>'
-        + '<div class="cc-meta"><span class="cc-edu">'+(b.by||'')+'</span>'
-          + '<div class="cc-tags"><span class="cc-tag">Book</span><span class="cc-tag price">'+(free?'FREE':b.price)+'</span></div>'
-        + '</div>'
-      + '</div>'
-    + '</div></a>';
+/* Ek akela book-skeleton card — Firebase se extra books load hote waqt "aur items
+   aa rahe hain" dikhane ke liye grid ke end me temporarily jode jaate hain. */
+function renderBookSkeleton(){
+  return '<div class="card book-card skeleton-card fb-loading-skeleton" aria-hidden="true">'
+    + '<div class="book-cover"><span class="sk-block sk-fill"></span></div>'
+    + '<div class="book-meta-force">'
+    + '<span class="sk-block" style="width:38%;height:9px;margin:0 0 6px;"></span>'
+    + '<span class="sk-block" style="width:94%;height:12px;margin:0 0 4px;"></span>'
+    + '<span class="sk-block" style="width:68%;height:12px;margin:0;"></span>'
+    + '</div>'
+    + '<div class="body">'
+    + '<div class="book-tags"><span class="sk-block sk-pill"></span><span class="sk-block sk-pill"></span></div>'
+    + '<div class="btn-row"><span class="sk-block sk-btn"></span><span class="sk-block sk-btn"></span></div>'
+    + '</div></div>';
 }
 
+/* Price + Language + File-size ko ek "tags" row me pill badges ki tarah dikhata hai.
+   Har tag ka apna pastel-glass color hota hai taaki alag-alag jaankari easily pehchani
+   jaaye. Language/File-size sirf tab dikhte hain jab woh data maujood ho (Firebase se
+   admin ne bhara ho) — static books me na ho to bas price pill akela dikhega, container
+   ki min-height fix hone se card ki length sabke liye same hi rehti hai. */
+function renderBookTags(b){
+  var free = isFreePrice(b.price);
+  var priceLabel = free ? 'FREE' : b.price;
+  var tags = '<span class="tag-pill tag-price'+(free?' tag-free':'')+'">'+priceLabel+'</span>';
+  if (b.language) tags += '<span class="tag-pill tag-lang">'+b.language+'</span>';
+  if (b.fileSize) tags += '<span class="tag-pill tag-size">'+b.fileSize+'</span>';
+  return '<div class="book-tags">'+tags+'</div>';
+}
+
+function renderBookCard(b){
+  var demoBtn = (b.demoType === 'popup')
+    ? '<a class="btn btn-demo" href="javascript:void(0)" onclick="openPdfDemo(event)">Demo</a>'
+    : '<a class="btn btn-demo" href="'+b.demoHref+'" rel="noopener" target="_blank">Demo</a>';
+  var free = isFreePrice(b.price);
+  var freeRibbon = free ? '<span class="free-ribbon">FREE</span>' : '';
+  /* Puura card ab clickable hai (respective product/buy page kholta hai) —
+     data-go-href pe navigate hota hai, jab tak click kisi actual button/link par na ho. */
+  var goHref = b.buyHref || '';
+  /* Image ko ek .book-cover wrapper me lapeta hai taaki: (1) text pehle turant dikhe
+     aur bhaari image baad me fade-in ho, (2) tab tak uske shape (3:4 book-cover) jaisa
+     hi ek shimmer skeleton dikhaya ja sake. */
+  return '<div class="card book-card" data-category="book" data-go-href="'+goHref+'" tabindex="0" role="link" aria-label="'+b.name+'">' + freeRibbon
+    + '<div class="book-cover"><div class="img-skeleton"></div><img alt="'+b.alt+'" loading="lazy" decoding="async" src="'+toDirectImageUrl(b.img)+'" onload="this.classList.add(\'is-loaded\');this.previousElementSibling&amp;&amp;this.previousElementSibling.classList.add(\'is-hidden\')" onerror="this.previousElementSibling&amp;&amp;this.previousElementSibling.classList.add(\'is-hidden\')"/></div>'
+    + '<div class="book-meta-force"><div class="book-cat-force">'+b.by+'</div><div class="book-name-force">'+b.name+'</div></div>'
+    + '<div class="body"><div class="by">'+b.by+'</div><h3>'+b.name+'</h3>'
+    + renderBookTags(b)
+    + '<div class="btn-row">'+demoBtn
+    + '<a class="btn btn-buy b" href="'+b.buyHref+'" rel="noopener" target="_blank">Buy</a></div></div></div>';
+}
+
+/* ---- Poore book-card par click/keyboard se uske respective product page pe le jaana ----
+   Demo/Buy buttons apna normal kaam karte rehte hain (unpe click "closest a" se bach jaata hai). */
+(function wireBookCardNavigation(){
+  var grid = document.getElementById('booksGrid');
+  if (!grid) return;
+  function goToCard(card){
+    var href = card.getAttribute('data-go-href');
+    if (href) window.open(href, '_blank', 'noopener');
+  }
+  grid.addEventListener('click', function(e){
+    if (e.target.closest('a,button')) return;
+    var card = e.target.closest('.book-card');
+    if (card) goToCard(card);
+  });
+  grid.addEventListener('keydown', function(e){
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    if (e.target.closest('a,button')) return;
+    var card = e.target.closest('.book-card');
+    if (!card) return;
+    e.preventDefault();
+    goToCard(card);
+  });
+})();
+
+
+/* Books count subtitle ("21 books" wala) ko hamesha asli, live count se update karta hai —
+   pehle static list ke count se, fir jab Firebase se extra books aa jaayein tab unhe bhi
+   jodkar dobara update karta hai. Isse yeh count kabhi bhi hardcoded/purana nahi rehta. */
+function updateBooksCountSub(total){
+  var el = document.getElementById('booksCountSub');
+  if (el) el.textContent = total + (total === 1 ? ' book' : ' books');
+}
 
 (function(){
   var booksGrid = document.getElementById('booksGrid');
   if (booksGrid) booksGrid.innerHTML = BOOKS.map(renderBookCard).join('');
+  updateBooksCountSub(BOOKS.length);
 })();
 
 /* ---- Firebase se admin panel ke through add kiye gaye naye BOOKS load karo ---- */
 (function loadFirebaseBooks(){
+  var booksGrid = document.getElementById('booksGrid');
+  if (booksGrid) {
+    var loadingHTML = '';
+    for (var i = 0; i < 4; i++) loadingHTML += renderBookSkeleton();
+    booksGrid.insertAdjacentHTML('beforeend', loadingHTML);
+  }
+  function clearLoadingSkeletons(){
+    if (!booksGrid) return;
+    var nodes = booksGrid.querySelectorAll('.fb-loading-skeleton');
+    for (var i = 0; i < nodes.length; i++) nodes[i].remove();
+  }
   fetch('/.netlify/functions/get-all-products')
     .then(function(res){ return res.ok ? res.json() : []; })
     .then(function(items){
-      var booksGrid = document.getElementById('booksGrid');
+      clearLoadingSkeletons();
       if (!booksGrid) return;
+      var addedCount = 0;
       items.forEach(function(p){
         if (p.category !== 'book') return;
-        if (p.visibility === 'private') return;
         var mapped = {
           alt: p.name,
           img: p.cardImage || '',
@@ -59,14 +136,18 @@ function renderBookCard(b){
           desc: p.desc || '',
           price: '₹' + p.price,
           duration: p.duration || '',
+          language: p.language || '',
+          fileSize: p.fileSize || '',
           demoHref: 'book_page.html?id=' + p.id + '#previewSection',
           demoType: 'link',
           buyHref: 'book_page.html?id=' + p.id
         };
         booksGrid.insertAdjacentHTML('beforeend', renderBookCard(mapped));
+        addedCount++;
       });
+      if (addedCount) updateBooksCountSub(BOOKS.length + addedCount);
     })
-    .catch(function(){ /* silent fail — static catalogue already visible */ });
+    .catch(function(){ clearLoadingSkeletons(); /* silent fail — static catalogue already visible */ });
 })();
 
 /* ---- inline script block 3 ---- */

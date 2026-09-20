@@ -559,7 +559,7 @@
               <span class="slider"></span>
             </label>
             <div class="visibility-text">
-              <div class="visibility-main priv" id="visibilityLabel">🔒 Private — sirf tum dekh paoge (testing mode)</div>
+              <div class="visibility-main pub" id="visibilityLabel">🌍 Public — sabko live catalogue par dikhega</div>
               <div class="hint">Testing ke baad Public switch on karein taaki user catalogue par display ho sake.</div>
             </div>
           </div>
@@ -723,7 +723,7 @@
           </div>
           <div class="preview-card-wrap">
             <div class="preview-banner" id="prevImg">
-              <span class="preview-pill priv" id="prevVisBadge">🔒 PRIVATE</span>
+              <span class="preview-pill pub" id="prevVisBadge">🌍 PUBLIC</span>
               📗
             </div>
             <div class="preview-body">
@@ -793,61 +793,36 @@
       }
     }
 
-    // 3. Live Card Preview Update
-   function updatePreview(){
-  const nameEl = document.getElementById('fName');
-  const priceEl = document.getElementById('fPrice');
-  if (!nameEl || !priceEl) return;
-
-  const name = nameEl.value || 'Product ka naam yahan aayega';
-  const price = priceEl.value.trim();
-  const iconEl = document.getElementById('fIcon');
-  const icon = (iconEl && iconEl.value) || '📗';
-  const cardImageEl = document.getElementById('fCardImage');
-  const cardImage = cardImageEl ? cardImageEl.value : '';
-  const visToggle = document.getElementById('fVisibility');
-  const isPublic = !visToggle || visToggle.checked;
-
-  const prevNameEl = document.getElementById('prevName');
-  if (prevNameEl) prevNameEl.textContent = name;
-  const prevPriceEl = document.getElementById('prevPrice');
-  if (prevPriceEl) prevPriceEl.textContent = (!price || Number(price) === 0) ? 'FREE' : ('₹' + price);
-
-  const imgBox = document.getElementById('prevImg');
-  if (imgBox) {
-    /* Badge ko pehle bacha lo, warna innerHTML overwrite se delete ho jata hai */
-    const existingBadge = document.getElementById('prevVisBadge');
-    const badgeHTML = existingBadge ? existingBadge.outerHTML : '';
-    if (cardImage) {
-      imgBox.innerHTML = badgeHTML + `<img src="${cardImage}" onerror="this.parentElement.innerHTML='${badgeHTML}${icon}'">`;
-    } else {
-      imgBox.innerHTML = badgeHTML + icon;
+    // 3. Visibility switch — label text turant sync karo jab toggle badle
+    function updateVisibilityLabel() {
+      const toggle = document.getElementById('fVisibility');
+      const label = document.getElementById('visibilityLabel');
+      const isPublic = !toggle || toggle.checked;
+      if (label) {
+        label.textContent = isPublic
+          ? '🌍 Public — sabko live catalogue par dikhega'
+          : '🔒 Private — sirf tum dekh paoge (testing mode)';
+        label.className = 'visibility-main ' + (isPublic ? 'pub' : 'priv');
+      }
+      updatePreviewExtended();
     }
-  }
 
-  /* Purane simple admin layout ke liye (agar kahin .preview-card class use ho) */
-  const previewCard = document.querySelector('.preview-card');
-  if (previewCard) {
-    let pill = previewCard.querySelector('.visibility-pill');
-    if (!pill) {
-      pill = document.createElement('div');
-      pill.className = 'visibility-pill';
-      previewCard.insertBefore(pill, previewCard.firstChild);
+    // 4. Live Card Preview Update — pehle common updatePreview() (naam/price/image sync
+    //    karta hai), fir yahan sirf visibility badge sync karo (badge ab admin-common.js
+    //    ke updatePreview() me automatically preserve ho jaata hai).
+    function updatePreviewExtended(){
+      if (typeof updatePreview === 'function') updatePreview();
+
+      const visToggle = document.getElementById('fVisibility');
+      const isPublic = !visToggle || visToggle.checked;
+      const badgeEl = document.getElementById('prevVisBadge');
+      if (badgeEl) {
+        badgeEl.className = 'preview-pill ' + (isPublic ? 'pub' : 'priv');
+        badgeEl.textContent = isPublic ? '🌍 PUBLIC' : '🔒 PRIVATE';
+      }
     }
-    pill.textContent = isPublic ? '🌍 PUBLIC' : '🔒 PRIVATE';
-    pill.classList.toggle('pub', isPublic);
-    pill.classList.toggle('priv', !isPublic);
-  }
 
-  /* Naye modern layout ka badge turant sync karo */
-  const badgeEl = document.getElementById('prevVisBadge');
-  if (badgeEl) {
-    badgeEl.className = 'preview-pill ' + (isPublic ? 'pub' : 'priv');
-    badgeEl.textContent = isPublic ? '🌍 PUBLIC' : '🔒 PRIVATE';
-  }
-}
-
-    // 4. Hook save button to ensure all automatic defaults are set right before saving
+    // 5. Hook save button to ensure all automatic defaults are set right before saving
     function prepareAndSaveProduct() {
       updateOverviewAuto();
       updateCardDescAuto();
@@ -872,6 +847,7 @@
     window.addEventListener('DOMContentLoaded', function() {
       updateOverviewAuto();
       updateCardDescAuto();
+      updateVisibilityLabel();
       updatePreviewExtended();
     });
   </script>

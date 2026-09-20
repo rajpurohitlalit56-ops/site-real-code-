@@ -19,17 +19,25 @@ exports.handler = async (event) => {
       password, id, category, name, icon, price,
       by, desc, duration, demoHref, cardImage, qr, channelId,
       bannerImage, planBadge, overview, fullDescription, demoMedia, topics,
+      /* Book product page (book_page.html) ke liye extra fields */
       previewImages, examTags, author, publisher, pagesCount, language,
-      ratingText, downloadsText, fileSize, downloadLink, oldPrice, pdfLink,
-      visibility
+      ratingText, downloadsText, fileSize, downloadLink, oldPrice, pdfLink
     } = body;
 
+    // Password check — sirf sahi ADMIN_PASSWORD wale hi save kar sakte hain
     if (!password || password !== process.env.ADMIN_PASSWORD) {
-      return { statusCode: 401, body: JSON.stringify({ error: 'Galat password' }) };
+      return {
+        statusCode: 401,
+        body: JSON.stringify({ error: 'Galat password' }),
+      };
     }
 
+    // Price ab optional hai — khali chodo toh book "FREE" ban jaati hai
     if (!id || !name) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'id aur name zaroori hain' }) };
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'id aur name zaroori hain' }),
+      };
     }
 
     const productData = {
@@ -45,9 +53,7 @@ exports.handler = async (event) => {
       qr: qr || '',
       channelId: category === 'batch' ? (channelId || '') : '',
 
-      /* PUBLIC/PRIVATE — default hamesha public, sirf explicitly "private" bhejne par hi private banega */
-      visibility: visibility === 'private' ? 'private' : 'public',
-
+      /* Product page (SEO page) fields */
       bannerImage: bannerImage || '',
       planBadge: planBadge || '',
       overview: overview || '',
@@ -55,6 +61,8 @@ exports.handler = async (event) => {
       demoMedia: demoMedia || '',
       topics: topics || '',
 
+      /* Book product page (book_page.html) ke liye extra fields — sirf category:'book' ke liye
+         istemaal hote hain, lekin yahan hamesha save karte hain taaki koi data loss na ho. */
       previewImages: previewImages || '',
       examTags: examTags || '',
       author: author || '',
@@ -73,8 +81,14 @@ exports.handler = async (event) => {
 
     await db.collection('catalog_products').doc(id).set(productData, { merge: true });
 
-    return { statusCode: 200, body: JSON.stringify({ success: true, id }) };
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ success: true, id }),
+    };
   } catch (err) {
-    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
   }
 };
