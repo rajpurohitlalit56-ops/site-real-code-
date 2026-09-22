@@ -1,5 +1,8 @@
 /* ==== Batches: rendering + mounting + Firebase sync (batch products only) ====
-   Depends on: js/batches-data.js (BATCHES array) — load that script BEFORE this one. */
+   Depends on: js/batches-data.js (BATCHES array) — load that script BEFORE this one.
+   Depends on: js/products-data.js (window.MSP_PRODUCTS_PROMISE) — load that script
+   BEFORE this one too, so batches.js and books.js share one Firebase fetch
+   instead of each firing their own. */
 
 /* Ek akela batch-skeleton card — Firebase se extra batches load hote waqt "aur items
    aa rahe hain" dikhane ke liye grid ke end me temporarily jode jaate hain. Books ke
@@ -72,7 +75,10 @@ function renderBatchCard(b){
 })();
 
 /* ---- Firebase se admin panel ke through add kiye gaye naye BATCHES load karo ----
-   Static BATCHES list ko touch nahi karta, sirf naye batch products jod deta hai. */
+   Static BATCHES list ko touch nahi karta, sirf naye batch products jod deta hai.
+   Fetch khud nahi karta — window.MSP_PRODUCTS_PROMISE (js/products-data.js) ka
+   result use karta hai, jo books.js ke saath shared hai, taaki dono ek hi
+   network call se chalein instead of do alag fetch calls ke. */
 (function loadFirebaseBatches(){
   var batchesGrid = document.getElementById('batchesGrid');
   if (batchesGrid) {
@@ -85,8 +91,9 @@ function renderBatchCard(b){
     var nodes = batchesGrid.querySelectorAll('.fb-loading-skeleton');
     for (var i = 0; i < nodes.length; i++) nodes[i].remove();
   }
-  fetch('/.netlify/functions/get-all-products')
-    .then(function(res){ return res.ok ? res.json() : []; })
+  var productsPromise = window.MSP_PRODUCTS_PROMISE
+    || fetch('/.netlify/functions/get-all-products').then(function(res){ return res.ok ? res.json() : []; });
+  productsPromise
     .then(function(items){
       clearLoadingSkeletons();
       if (!batchesGrid) return;

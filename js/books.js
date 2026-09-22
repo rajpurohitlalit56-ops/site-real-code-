@@ -1,5 +1,8 @@
 /* ==== Books: rendering + mounting + Firebase sync (book products only) + PDF demo popup ====
-   Depends on: js/books-data.js (BOOKS array) — load that script BEFORE this one. */
+   Depends on: js/books-data.js (BOOKS array) — load that script BEFORE this one.
+   Depends on: js/products-data.js (window.MSP_PRODUCTS_PROMISE) — load that script
+   BEFORE this one too, so batches.js and books.js share one Firebase fetch
+   instead of each firing their own. */
 
 /* GitHub "blob" page ka link diya ho toh use seedha raw image link me convert kar do,
    taaki image turant load ho (blob wala link kabhi bhi <img> me directly nahi chalta). */
@@ -107,7 +110,10 @@ function updateBooksCountSub(total){
   updateBooksCountSub(BOOKS.length);
 })();
 
-/* ---- Firebase se admin panel ke through add kiye gaye naye BOOKS load karo ---- */
+/* ---- Firebase se admin panel ke through add kiye gaye naye BOOKS load karo ----
+   Fetch khud nahi karta — window.MSP_PRODUCTS_PROMISE (js/products-data.js) ka
+   result use karta hai, jo batches.js ke saath shared hai, taaki dono ek hi
+   network call se chalein instead of do alag fetch calls ke. */
 (function loadFirebaseBooks(){
   var booksGrid = document.getElementById('booksGrid');
   if (booksGrid) {
@@ -120,8 +126,9 @@ function updateBooksCountSub(total){
     var nodes = booksGrid.querySelectorAll('.fb-loading-skeleton');
     for (var i = 0; i < nodes.length; i++) nodes[i].remove();
   }
-  fetch('/.netlify/functions/get-all-products')
-    .then(function(res){ return res.ok ? res.json() : []; })
+  var productsPromise = window.MSP_PRODUCTS_PROMISE
+    || fetch('/.netlify/functions/get-all-products').then(function(res){ return res.ok ? res.json() : []; });
+  productsPromise
     .then(function(items){
       clearLoadingSkeletons();
       if (!booksGrid) return;
@@ -226,4 +233,3 @@ function updateBooksCountSub(total){
     }
   });
 })();
-

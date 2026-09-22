@@ -270,6 +270,11 @@ function clearForm(){
   setVal('fFileSize', '');
   setVal('fDownloadLink', '');
   setVal('fOldPrice', '');
+  /* Merged fields (sirf admin-books page par hote hain — Educator/Author/Publisher
+     aur Badge,Pages,Language,FileSize) ko bhi khali karo, warna hidden fields khali
+     ho jaane ke baad bhi visible merged field me purana text dikhta reh jaata hai. */
+  setVal('fEducatorMerged', '');
+  setVal('fMergedDetails', '');
   /* Banner image ke apne dropzone/preview sirf batches page par hote hain — books page par
      cover image card-image field ke saath hi combine ho chuki hai, to yahan guard laga do. */
   const bannerFileEl = document.getElementById('fBannerImageFile');

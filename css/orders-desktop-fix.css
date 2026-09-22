@@ -1,0 +1,51 @@
+/* =====================================================================
+   ORDERS SECTION — DESKTOP GRID FIX
+   =====================================================================
+   Problem: on desktop, "My Orders" was rendering as one narrow,
+   mobile-width column of stacked cards in the middle of a wide empty
+   page (see css/desktop.css, the old rule:
+     #page-orders #ordersAccountBar,
+     #page-orders #ordersSignedOut,
+     #page-orders #ordersList{ max-width:760px; ... }
+   which capped everything, including the order-card LIST, to a single
+   760px-wide centered column).
+
+   Fix: keep the account bar / signed-out / loading / empty MESSAGES as
+   a single centered bar (they're one-line status widgets, not cards —
+   a grid would look odd), but turn #ordersList itself into a responsive
+   multi-column grid so order cards actually use the screen's width.
+
+   This file must be linked AFTER css/desktop.css so its rules win
+   (same #page-orders #ordersList selector, later in the cascade order).
+   No changes needed to css/desktop.css itself.
+   ===================================================================== */
+
+@media (min-width: 900px){
+
+  /* Order cards — responsive grid instead of a single stacked column */
+  #page-orders #ordersList{
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+
+  /* Each card no longer needs its own bottom margin — the grid gap handles spacing */
+  #page-orders #ordersList .order-card{
+    margin-bottom: 0;
+  }
+
+  /* Account bar / sign-in prompt / loading / empty states — keep these as a
+     single centered status bar, just widen slightly to match the grid above */
+  #page-orders #ordersAccountBar,
+  #page-orders #ordersSignedOut,
+  #page-orders #ordersLoading,
+  #page-orders #ordersEmpty{
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

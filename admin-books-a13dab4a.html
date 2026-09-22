@@ -688,8 +688,12 @@
           </div>
 
           <div class="form-group">
-            <label>Educator / By Line</label>
-            <input type="text" id="fBy" placeholder="jaise: Bhutesh Sir · E1 Coaching" oninput="updatePreviewExtended()">
+            <label>Educator / Author / Publisher</label>
+            <input type="text" id="fEducatorMerged" placeholder="jaise: Bhutesh Sir · E1 Coaching" oninput="onEducatorMergedInput()">
+            <div class="hint">Yeh ek hi field ab Educator (by-line), Author aur Publisher — teeno jagah same data use karega, alag-alag bharne ki zaroorat nahi.</div>
+            <input type="hidden" id="fBy">
+            <input type="hidden" id="fAuthor">
+            <input type="hidden" id="fPublisher">
           </div>
         </div>
 
@@ -763,30 +767,13 @@
           </div>
 
           <div class="form-group">
-            <label>Top tag / badge</label>
-            <input type="text" id="fPlanBadge" placeholder="jaise: SSC CGL 2026">
-          </div>
-
-          <div class="form-grid-2">
-            <div class="form-group">
-              <label>Author naam</label>
-              <input type="text" id="fAuthor" placeholder="jaise: Gagan Pratap Sir">
-            </div>
-            <div class="form-group">
-              <label>Publisher</label>
-              <input type="text" id="fPublisher" placeholder="My Selection Prep" value="My Selection Prep">
-            </div>
-          </div>
-
-          <div class="form-grid-2">
-            <div class="form-group">
-              <label>Total pages</label>
-              <input type="number" id="fPagesCount" placeholder="320">
-            </div>
-            <div class="form-group">
-              <label>Language</label>
-              <input type="text" id="fLanguage" placeholder="jaise: Hindi + English" oninput="updatePreviewExtended()">
-            </div>
+            <label>Badge, Pages, Language, File size</label>
+            <input type="text" id="fMergedDetails" placeholder="jaise: SSC CGL 2026, 320, Hindi + English, 122.5 MB" oninput="onMergedDetailsInput()">
+            <div class="hint">Sequence fix hai — isi order mein comma (,) se separate karke likho: <b>Top tag/badge, Total pages, Language, File size</b>. Koi field khali rakhni ho to uski jagah khali chhodo, lekin comma zaroor lagao taaki order sahi rahe (jaise: SSC CGL 2026, , Hindi, 122.5 MB).</div>
+            <input type="hidden" id="fPlanBadge">
+            <input type="hidden" id="fPagesCount">
+            <input type="hidden" id="fLanguage">
+            <input type="hidden" id="fFileSize">
           </div>
 
           <div class="form-grid-2">
@@ -800,15 +787,9 @@
             </div>
           </div>
 
-          <div class="form-grid-2">
-            <div class="form-group">
-              <label>File size text</label>
-              <input type="text" id="fFileSize" placeholder="jaise: 122.5 MB" oninput="updatePreviewExtended()">
-            </div>
-            <div class="form-group">
-              <label>Purana price (₹) — strike-through ke liye</label>
-              <input type="number" id="fOldPrice" placeholder="khali chodo to price x2 auto dikhega">
-            </div>
+          <div class="form-group">
+            <label>Purana price (₹) — strike-through ke liye</label>
+            <input type="number" id="fOldPrice" placeholder="khali chodo to price x2 auto dikhega">
           </div>
         </div>
 
@@ -918,11 +899,57 @@
       if (descField) descField.value = shortDesc;
     }
 
+    // 1b. Merged fields ↔ hidden fields sync
+    //     "Educator / Author / Publisher" ek hi field hai jo fBy, fAuthor, fPublisher
+    //     teeno hidden fields ko same value se bharta hai.
+    function onEducatorMergedInput(){
+      var val = document.getElementById('fEducatorMerged').value;
+      document.getElementById('fBy').value = val;
+      document.getElementById('fAuthor').value = val;
+      document.getElementById('fPublisher').value = val;
+      updatePreviewExtended();
+    }
+
+    //     "Badge, Pages, Language, File size" ek hi field hai jise comma se todkar
+    //     fixed sequence mein fPlanBadge, fPagesCount, fLanguage, fFileSize hidden
+    //     fields mein bhar diya jaata hai.
+    function onMergedDetailsInput(){
+      var val = document.getElementById('fMergedDetails').value;
+      var parts = val.split(',').map(function(s){ return s.trim(); });
+      document.getElementById('fPlanBadge').value = parts[0] || '';
+      document.getElementById('fPagesCount').value = parts[1] || '';
+      document.getElementById('fLanguage').value = parts[2] || '';
+      document.getElementById('fFileSize').value = parts[3] || '';
+      updatePreviewExtended();
+    }
+
+    //     Reverse sync — jab bhi hidden fields (edit product load hone par, ya clear
+    //     hone par) apne aap update hote hain, toh visible merged fields ko bhi unke
+    //     hisaab se dobara bhar do. Jab field khud typing me active ho, tab usse
+    //     chhedo mat (taaki cursor position/typing disturb na ho).
+    function syncMergedDisplaysFromHidden(){
+      var educatorEl = document.getElementById('fEducatorMerged');
+      var byEl2 = document.getElementById('fBy');
+      if (educatorEl && byEl2 && document.activeElement !== educatorEl) {
+        educatorEl.value = byEl2.value || '';
+      }
+
+      var detailsEl = document.getElementById('fMergedDetails');
+      if (detailsEl && document.activeElement !== detailsEl) {
+        var badge = document.getElementById('fPlanBadge').value || '';
+        var pages = document.getElementById('fPagesCount').value || '';
+        var lang = document.getElementById('fLanguage').value || '';
+        var size = document.getElementById('fFileSize').value || '';
+        detailsEl.value = [badge, pages, lang, size].join(', ');
+      }
+    }
+
     // 2. Live Card Preview Update — pehle common updatePreview() (naam/price/cover image
     //    sync karta hai), fir yahan author/by-line + language/file-size tag pills sync
     //    karo (asli book-card par yeh sab price ke saath ek tags row me dikhte hain).
     function updatePreviewExtended(){
       if (typeof updatePreview === 'function') updatePreview();
+      syncMergedDisplaysFromHidden();
 
       var byEl = document.getElementById('fBy');
       var authorEl = document.getElementById('prevAuthor');

@@ -22,6 +22,16 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        // Browser/CDN can reuse this response for 60s without asking Firestore
+        // again, and can serve a stale copy for up to 5 more minutes while it
+        // quietly refreshes in the background. Admin edits still show up
+        // within about a minute, but repeat visits and page-to-page
+        // navigation (index -> product_page -> back) stop re-hitting
+        // Firestore on every single load.
+        'Cache-Control': 'public, max-age=60, stale-while-revalidate=300',
+      },
       body: JSON.stringify(items),
     };
   } catch (err) {
